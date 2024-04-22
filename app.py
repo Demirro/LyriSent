@@ -1,4 +1,4 @@
 import streamlit as st
+import nb_class
 
-x = st.slider('Select a value')
-st.write(x, 'squared is', x * x)
+st.write(nb_class.run_nb())
