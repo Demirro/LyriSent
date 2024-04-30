@@ -1,4 +1,5 @@
 import csv
+import re
 
 import streamlit as st
 
@@ -77,6 +78,7 @@ def main():
         print('Yes (y/Y) or No (n/N)')
     # Fetch lyrics for each song
     data = []
+    song_count = 0
     for artist, track in songs_list:
         if not is_track_checked(track):
             result = fetch_lyrics(artist, track)
@@ -84,8 +86,13 @@ def main():
                 lyrics = result['lyrics'] = clean_lyrics(result['lyrics'])
                 if not has_gpt_response(track):
                     result['gpt_response'] = check_sentiment_openai(result)
-                new_row = [587, result['track'], result['artist'], result['lyrics'], result['gpt_response']]
+                    result['gpt_response'] = re.sub()
+                    print(result['gpt_response'])
+                new_row = [result['gpt_response']]
+                print(new_row)
                 existing_csv_data.extend(new_row)
+                print(existing_csv_data)
+                song_count += 1
 
     # # Save the data as CSV
     # csv_file_path = 'Data/Lyrics/songs_data.csv'
@@ -98,7 +105,9 @@ def main():
     try:
         with open(csv_file_path, mode='w', encoding='utf-8', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerows(existing_csv_data)
+            header = ['Song', 'Artist', 'Lyrics', 'Joy', 'Trust', 'Fear', 'Surprise', 'Sadness', 'Disgust', 'Anger', 'Anticipation']
+            writer.writerow(header)
+            writer.writerow(existing_csv_data)
     except Exception as e:
         print(f"An error occurred while writing to the CSV file: {e}")
 
