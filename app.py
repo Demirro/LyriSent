@@ -1,104 +1,108 @@
+import csv
+
 import streamlit as st
-import pandas as pd
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import accuracy_score, classification_report, f1_score
 
-import utils
-nb_classifiers = {}
-
-df = pd.read_csv('data/EmotionWheelFinal (1).csv')
-
-df['cleaned_lyrics'] = df['Lyrics'].apply(utils.clean_lyrics)
-# Load the NRC Hashtag Emotion Lexicon
-lexicon_path = "data/NRC-Hashtag-Emotion-Lexicon-v0.2.txt"
-lexicon_df = pd.read_csv(lexicon_path, delimiter='\t', header=None, names=['emotion', 'word', 'score'])
-
-# Filter the lexicon to include only unique words
-lexicon_words = set(lexicon_df['word'].str.lower().str.replace(r'#', '', regex=True))
-
-# Filter lexicon words to ensure they are all strings
-filtered_lexicon_words = {word for word in lexicon_words if isinstance(word, str)}
-
-# Show some of the lexicon words
-#print(list(lexicon_words)[:10])
-
-# Update the CountVectorizer with the filtered vocabulary
-vectorizer = CountVectorizer(vocabulary=filtered_lexicon_words)
-
-# Fit and transform the cleaned lyrics
-lyrics_bow = vectorizer.fit_transform(df['cleaned_lyrics'])
-
-# Convert to array and create a DataFrame to see the result
-lyrics_bow_df = pd.DataFrame(lyrics_bow.toarray(), columns=vectorizer.get_feature_names_out())
-
-#print(lyrics_bow_df.head())
-
-# Initialize a dictionary to store model results
-model_results = {}
-
-X = lyrics_bow_df
-
-# List of emotion columns in the dataset
-emotion_columns = df.columns[4:-1]  # Assuming the last column is an extra unnamed column
-
-# Training and storing each emotion classifier
-for emotion in emotion_columns[:-1]:  # Excluding 'Unnamed: 11'
-    # Prepare labels for the current emotion
-    y = df[emotion]
-
-    # Split the data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-
-    # Initialize the Naive Bayes classifier
-    nb_classifier = MultinomialNB()
-
-    # Train the classifier
-    nb_classifier.fit(X_train, y_train)
-
-    # Store the classifier
-    nb_classifiers[emotion] = nb_classifier
-
-    # Predict on the test set
-    y_pred = nb_classifier.predict(X_test)
-
-    # Calculate accuracy and F1-score
-    accuracy = accuracy_score(y_test, y_pred)
-    f1 = f1_score(y_test, y_pred, average='weighted')  # Using weighted to account for class imbalance
-
-    # Store the results
-    model_results[emotion] = {'Accuracy': accuracy, 'F1-Score': f1}
-
-# Display the results for each emotion model
-#print(model_results)
-
-def preprocess_lyrics(new_lyrics):
-    # Clean the lyrics
-    cleaned_lyrics = utils.clean_lyrics(new_lyrics)
-    # Transform the lyrics using the previously defined vectorizer
-    transformed_lyrics = vectorizer.transform([cleaned_lyrics])
-    return transformed_lyrics
-
-def predict_emotions(preprocessed_lyrics):
-    emotion_scores = {}
-    for emotion in emotion_columns[:-1]:  # Excluding 'Unnamed: 11'
-        # Retrieve the classifier for the current emotion
-        classifier = nb_classifiers[emotion]
-        # Predict the probability of the emotion being present
-        probability = classifier.predict_proba(preprocessed_lyrics)[0][1]
-        # Store the probability with the corresponding emotion
-        emotion_scores[emotion] = probability
-    return emotion_scores
+import nb_class
+from GPT.OpenAI import check_sentiment_openai
+from genius import fetch_lyrics
+from utils import clean_lyrics
 
 # Example new lyrics
 new_lyrics = "Now there's too many people that I have done wrong And that I owe my thanks to for sticking along with me Along with me, oh, oh"
 
 # Preprocess the lyrics
-preprocessed_lyrics = preprocess_lyrics(new_lyrics)
+preprocessed_lyrics = nb_class.preprocess_lyrics(new_lyrics)
 
 # Predict emotions
-emotion_predictions = predict_emotions(preprocessed_lyrics)
+emotion_predictions = nb_class.predict_emotions(preprocessed_lyrics)
 
 # Print the emotion predictions
 print(emotion_predictions)
+
+csv_file_path = 'data/gpt/songs_data.csv'
+try:
+    with open(csv_file_path, encoding='utf8', newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        existing_csv_data = list(reader)
+except FileNotFoundError:
+    existing_csv_data = []
+
+checked_track = dict()
+def is_track_checked(track_to_check):
+    global checked_track
+    if existing_csv_data:
+        for track in existing_csv_data:
+            if track and track['track'].casefold() == track_to_check.casefold():
+                print(track['track'] + ' was already checked. It was skipped')
+                checked_track = track
+                return True
+def has_gpt_response(track_to_check):
+    for track in existing_csv_data:
+        if track['track'].casefold() == track_to_check.casefold():
+            if track['gpt_response'] != '':
+                return True
+def _input(message, input_type=str):
+    while True:
+        try:
+            return input_type(input(message))
+        except:pass
+def main():
+    # List of songs (artist, track)
+    songs_list = [
+    ]
+    prefab_check = input('Do you want to use the prefab list of songs (10 songs)? Yes (y/Y) or No (n/N)\n')
+    if prefab_check.casefold() in {'yes','y'}:
+        songs_list = [
+            ('Childish Gambino','This is America'),
+            # ('brakence','deepfacke'),
+            # ('Peter Fox','Haus am See'),
+            # ('Feu! Chatterton', "J'ai tout mon temps"),
+            # ('Bruno Mars', 'Treasure'),
+            # ('Ed Sheeran', 'Shape Of You'),
+            # ('The Japanese House', 'Saw You In A Dream'),
+            # ('Tom Misch', 'Disco Yes'),
+            # ('Radiohead', 'Creep'),
+            # ('Jacob Collier', 'Hideaway'),
+        ]
+    elif prefab_check.casefold() in {'no','n'}:
+        number_of_songs = _input('How many songs do you want to check: ', int)
+        for i in range(number_of_songs):
+            print('Song no. ' + str(i+1))
+            track_name = input('Track Name: ')
+            artist = input('Artist: ')
+            songs_list.append((artist, track_name))
+            print('\n')
+        print(songs_list)
+    else:
+        print('Yes (y/Y) or No (n/N)')
+    # Fetch lyrics for each song
+    data = []
+    for artist, track in songs_list:
+        if not is_track_checked(track):
+            result = fetch_lyrics(artist, track)
+            if result:
+                lyrics = result['lyrics'] = clean_lyrics(result['lyrics'])
+                if not has_gpt_response(track):
+                    result['gpt_response'] = check_sentiment_openai(result)
+                new_row = [587, result['track'], result['artist'], result['lyrics'], result['gpt_response']]
+                existing_csv_data.extend(new_row)
+
+    # # Save the data as CSV
+    # csv_file_path = 'Data/Lyrics/songs_data.csv'
+    # with open(csv_file_path, 'w', newline='', encoding='utf-8') as csv_file:
+    #     fieldnames = ['artist', 'track', 'lyrics', 'gpt_response']
+    #     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+    #     writer.writeheader()
+    #     writer.writerows(data)
+
+    try:
+        with open(csv_file_path, mode='w', encoding='utf-8', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(existing_csv_data)
+    except Exception as e:
+        print(f"An error occurred while writing to the CSV file: {e}")
+
+    print(f"Data has been saved to {csv_file_path}")
+
+if __name__ == "__main__":
+    main()
