@@ -1,3 +1,54 @@
+import csv
+import io
+import re
+
+import streamlit as st
+
+import nb_class
+from GPT.OpenAI import check_sentiment_openai
+from genius import fetch_lyrics
+from utils import clean_lyrics
+
+# Example new lyrics
+new_lyrics = "Now there's too many people that I have done wrong And that I owe my thanks to for sticking along with me Along with me, oh, oh"
+
+# Preprocess the lyrics
+preprocessed_lyrics = nb_class.preprocess_lyrics(new_lyrics)
+
+# Predict emotions
+emotion_predictions = nb_class.predict_emotions(preprocessed_lyrics)
+
+# Print the emotion predictions
+print(emotion_predictions)
+
+csv_file_path = 'data/gpt/songs_data.csv'
+try:
+    with open(csv_file_path, encoding='utf8', newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        existing_csv_data = list(reader)
+except FileNotFoundError:
+    existing_csv_data = []
+
+checked_track = dict()
+def is_track_checked(track_to_check):
+    global checked_track
+    if existing_csv_data:
+        for track in existing_csv_data:
+            print(track)
+            if track and track['track'].casefold() == track_to_check.casefold():
+                print(track['track'] + ' was already checked. It was skipped')
+                checked_track = track
+                return True
+def has_gpt_response(track_to_check):
+    for track in existing_csv_data:
+        if track['track'].casefold() == track_to_check.casefold():
+            if track['gpt_response'] != '':
+                return True
+def _input(message, input_type=str):
+    while True:
+        try:
+            return input_type(input(message))
+        except:pass
 def main():
     # List of songs (artist, track)
     songs_list = [
@@ -149,3 +200,6 @@ def main():
         print(f"An error occurred while writing to the CSV file: {e}")
 
     print(f"Sentiment comparison data has been saved to {output_csv_file_path}")
+
+if __name__ == "__main__":
+    main()

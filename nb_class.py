@@ -81,11 +81,24 @@ def preprocess_lyrics(new_lyrics):
 
 def predict_emotions(preprocessed_lyrics):
     emotion_scores = {}
-    for emotion in emotion_columns[:-1]:  # Excluding 'Unnamed: 11'
+    # Annahme: emotion_columns[:-1] enthält die Liste der Emotionen
+    # Wir verwenden eine Liste der Emotionen, um sicherzustellen, dass sie in einer konsistenten Reihenfolge sind
+    # Du kannst diese Liste bei Bedarf anpassen, basierend auf den tatsächlichen Spaltennamen in deinem df.columns[4:-1]
+    emotions_to_predict = [col for col in df.columns[4:-1] if col != 'Unnamed: 11'] # Filter 'Unnamed: 11'
+
+    for emotion in emotions_to_predict:
         # Retrieve the classifier for the current emotion
-        classifier = nb_classifiers[emotion]
-        # Predict the probability of the emotion being present
-        probability = classifier.predict_proba(preprocessed_lyrics)[0][1]
-        # Store the probability with the corresponding emotion
-        emotion_scores[emotion] = probability
+        classifier = nb_classifiers.get(emotion) # Nutze .get() um Fehler zu vermeiden, falls ein Classifier fehlt
+        if classifier:
+            # Predict the probability of the emotion being present
+            # predict_proba gibt ein Array von Arrays zurück, [0][1] ist die Wahrscheinlichkeit für die positive Klasse
+            probability = classifier.predict_proba(preprocessed_lyrics)[0][1]
+            # Runde die Wahrscheinlichkeit auf zwei Dezimalstellen
+            rounded_probability = round(probability, 2)
+            # Store the rounded probability with the corresponding emotion
+            emotion_scores[emotion] = rounded_probability
+        else:
+            print(f"Warning: Classifier for emotion '{emotion}' not found.")
+            emotion_scores[emotion] = None # Oder ein anderer Standardwert, falls kein Classifier gefunden wurde
+
     return emotion_scores
