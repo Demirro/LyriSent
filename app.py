@@ -119,107 +119,161 @@ def main():
     # Liste zur Speicherung der neuen oder aktualisierten Daten
     # Wir arbeiten mit einer Kopie der existierenden Daten und fügen neue hinzu
     # oder aktualisieren, falls nötig.
-    all_combined_data_rows = list(existing_combined_data) # Erstelle eine veränderbare Kopie
+    # Liste zur Speicherung der neuen oder aktualisierten Daten
+    all_combined_data_rows = list(existing_combined_data)  # Erstelle eine veränderbare Kopie
 
     song_count = 0
     for artist, track in songs_list:
-        # Überprüfe, ob der Track bereits in den existierenden Daten ist
-        # Wir müssen nun prüfen, ob *alle* Vorhersagen (GPT, NB, BERT) bereits vorhanden sind
-        # oder ob wir den Track neu verarbeiten müssen.
-        # Für die Einfachheit prüfen wir hier nur, ob der Track überhaupt schonmal verarbeitet wurde.
-        # Eine robustere Logik könnte prüfen, ob spezifische Spalten (NB, BERT) fehlen.
-
         track_already_processed = is_track_checked(track, artist, all_combined_data_rows)
 
         if track_already_processed:
-             print(f"Skipping '{track}' by '{artist}' as it was already processed.")
-             continue # Gehe zum nächsten Song
+            print(f"Skipping '{track}' by '{artist}' as it was already processed.")
+            continue  # Gehe zum nächsten Song
 
         print(f"Processing '{track}' by '{artist}'...")
 
         result = fetch_lyrics(artist, track)
         if result and 'lyrics' in result and result['lyrics']:
             lyrics = result['lyrics']
-            print(lyrics)
-            cleaned_lyrics = utils.clean_lyrics(lyrics) # Nutze die clean_lyrics Funktion aus utils.py
-            cleaned_lyrics = utils.clean_lyrics_genius(cleaned_lyrics)
-            print(cleaned_lyrics)
+            # Bereinige Lyrics für Modelle (NB, BERT) und sende sie auch an GPT
+            cleaned_lyrics = utils.clean_lyrics(lyrics)
 
-            # *** OpenAI Sentiment Analyse ***
-            # Hole GPT Response. Falls bereits vorhanden in der *originalen* songs_data.csv,
-            # könnte man diese hier laden, um API-Aufrufe zu sparen.
-            # Derzeitiger Code ruft GPT immer auf, wenn der Track nicht in der finalen CSV ist.
-            # Du könntest hier eine Logik einbauen, die zuerst in 'data/gpt/songs_data.csv' nachsieht.
-
-            # Der Einfachheit halber rufen wir check_sentiment_openai hier auf, wenn nicht in finaler CSV
-            # Beachte: Dies kostet OpenAI Credits!
+            # --- OpenAI Sentiment Analyse ---
             print("Fetching GPT response...")
-            song_data_for_openai = {'lyrics': cleaned_lyrics} # Struktur, die check_sentiment_openai erwartet
+            song_data_for_openai = {'lyrics': cleaned_lyrics}
+            gpt_response_string = ''
             try:
                 gpt_response_string = check_sentiment_openai(song_data_for_openai)
-                # Entferne doppelte Anführungszeichen, falls nötig
-                gpt_response_string = re.sub('""', '', gpt_response_string)
-                #print(f"GPT Response Raw: {gpt_response_string}")
-
-                # Parse den GPT CSV String
-                gpt_sentiment_list_raw = []
-                if gpt_response_string:
-                    string_io = io.StringIO(gpt_response_string)
-                    reader = csv.reader(string_io)
-                    try:
-                        rows = list(reader)
-                        # Überspringe Header, falls vorhanden (GPT gibt manchmal einen Header aus)
-                        if rows and len(rows) > 0:
-                             # Wenn der erste Eintrag nicht 'Song Name' ist, nehme an, es gibt keinen Header oder er ist anders
-                             # Ansonsten starte ab der 2. Zeile.
-                             if rows[0][0].casefold() != 'song name':
-                                 gpt_sentiment_list_raw = rows[0]
-                             elif len(rows) > 1: # Es gab einen Header
-                                 gpt_sentiment_list_raw = rows[1]
-
-
-                        # Überprüfe, ob die Liste die erwartete Länge für Emotionen hat (8 Emotionen nach den ersten 3 Spalten)
-                        expected_gpt_emotion_count = 8
-                        # Stelle sicher, dass wir mindestens die 3 Basisspalten + Emotionen haben
-                        if len(gpt_sentiment_list_raw) < 3 + expected_gpt_emotion_count:
-                             print(f"Warning: GPT response parsing issue for '{track}'. Expected at least {3 + expected_gpt_emotion_count} columns, got {len(gpt_sentiment_list_raw)}. Filling missing emotion values with ''")
-                             # Füge leere Werte für fehlende Emotionen hinzu
-                             gpt_sentiment_list_raw.extend([''] * ((3 + expected_gpt_emotion_count) - len(gpt_sentiment_list_raw)))
-
-
-                    except Exception as e:
-                        print(f"Error parsing GPT response string for '{track}': {e}")
-                         # Setze die Liste auf leere Werte bei Parsing-Fehler
-                        gpt_sentiment_list_raw = [''] * (3 + expected_gpt_emotion_count)
-
-
-                # Extrahiere die Emotionen (ab der 4. Spalte, Index 3)
-                gpt_emotion_values = {}
-                # Stelle sicher, dass die Reihenfolge hier mit dem GPT Prompt übereinstimmt
-                gpt_emotions_order = ['Joy', 'Trust', 'Fear', 'Surprise', 'Sadness', 'Disgust', 'Anger', 'Anticipation']
-                # Stelle sicher, dass genügend Elemente in gpt_sentiment_list_raw vorhanden sind
-                if len(gpt_sentiment_list_raw) >= 3 + len(gpt_emotions_order):
-                    for i, emotion in enumerate(gpt_emotions_order):
-                        try:
-                            # Konvertiere zu int (0 oder 1), handle mögliche Fehler
-                            value_str = gpt_sentiment_list_raw[3 + i].strip()
-                            if value_str:
-                                gpt_emotion_values[emotion] = int(value_str)
-                            else:
-                                gpt_emotion_values[emotion] = '' # Leerer String, wenn Wert fehlt
-                        except (ValueError, IndexError):
-                             print(f"Warning: Could not parse GPT emotion value for '{emotion}' in '{track}'. Value was: '{gpt_sentiment_list_raw[3 + i] if len(gpt_sentiment_list_raw) > 3 + i else 'N/A'}'")
-                             gpt_emotion_values[emotion] = '' # Handle fehlende oder ungültige Werte
-                else:
-                     print(f"Warning: Not enough columns in parsed GPT response for '{track}' to extract all emotions.")
-                     for emotion in gpt_emotions_order:
-                         gpt_emotion_values[emotion] = ''
-
+                print(f"GPT Response Received (raw):\n---\n{gpt_response_string}\n---")
 
             except Exception as e:
                 print(f"An error occurred during OpenAI API call for '{track}': {e}")
-                gpt_emotion_values = {emotion: '' for emotion in ['Joy', 'Trust', 'Fear', 'Surprise', 'Sadness', 'Disgust', 'Anger', 'Anticipation']} # Setze alle GPT Werte auf leer bei API Fehler
+                gpt_response_string = ''  # Setze auf leer im Fehlerfall
 
+            # --- Noch robusteres Parsing der GPT-Antwort: Identifiziere die Datenzeile im Roh-String ---
+            gpt_sentiment_list_raw = []
+            gpt_emotions_order = ['Joy', 'Trust', 'Fear', 'Surprise', 'Sadness', 'Disgust', 'Anger', 'Anticipation']
+            expected_gpt_cols = 3 + len(gpt_emotions_order)  # Song Name,Artists,Lyrics + 8 Emotionen
+
+            data_line_string = None  # Speichert den String der identifizierten Datenzeile
+
+            # Teile die rohe Antwort in individuelle Zeilen auf
+            raw_lines = gpt_response_string.strip().splitlines()
+            # print(f"GPT Parsing: Split raw response into {len(raw_lines)} lines.") # Debug
+
+            # Gehe Zeile für Zeile durch, um die Datenzeile zu finden.
+            # Die Datenzeile sollte eine plausible Anzahl von Kommas (für die Spalten) enthalten
+            # und wahrscheinlich nicht die Header-Namen.
+            header_keywords = ["Song Name", "Artists", "Lyrics", "Joy", "Trust"]  # Typische Wörter im Header
+
+            for i, line in enumerate(raw_lines):
+                stripped_line = line.strip()
+                if not stripped_line:  # Überspringe leere Zeilen
+                    continue
+
+                # Heuristik 1: Eine plausible Datenzeile hat ungefähr die erwartete Anzahl von Kommas
+                # Wir erwarten N Spalten, also N-1 Kommas. Geben wir einen kleinen Puffer.
+                num_commas = stripped_line.count(',')
+                if num_commas < expected_gpt_cols - 3 or num_commas > expected_gpt_cols + 3:  # Erwarte N-1 Kommas, Puffer +-2
+                    # print(f"GPT Parsing: Line {i+1} skipped (comma count {num_commas} not plausible).") # Debug
+                    continue
+
+                # Heuristik 2: Eine Datenzeile sollte typischerweise nicht die Header-Keywords enthalten
+                if any(keyword in stripped_line for keyword in header_keywords):
+                    # print(f"GPT Parsing: Line {i+1} skipped (contains header keywords).") # Debug
+                    continue
+
+                # Heuristik 3: Versuche, diese einzelne Zeile als CSV zu parsen und prüfe die Spaltenanzahl
+                try:
+                    string_io_line = io.StringIO(stripped_line)
+                    reader_line = csv.reader(string_io_line)
+                    parsed_row_from_line = next(reader_line)
+
+                    # Heuristik 4: Prüfe, ob die geparste Zeile eine plausible Spaltenanzahl hat
+                    # Innerhalb eines engen Bereichs um die erwartete Anzahl
+                    if len(parsed_row_from_line) >= expected_gpt_cols - 2 and len(
+                            parsed_row_from_line) <= expected_gpt_cols + 2:
+                        # Diese Zeile scheint eine plausible Datenzeile zu sein!
+                        data_line_string = stripped_line  # Speichere den String dieser Zeile
+                        print(
+                            f"GPT Parsing: Identified plausible data line string (line {i + 1}, {len(parsed_row_from_line)} cols): {data_line_string}")  # Debug
+                        break  # Datenzeile gefunden, Suche beenden
+
+                    # else:
+                    # print(f"GPT Parsing: Line {i+1} parsed into {len(parsed_row_from_line)} cols, outside plausible range.") # Debug
+
+                except Exception as e:
+                    # print(f"GPT Parsing: Could not parse line {i+1} as CSV: {stripped_line[:100]}... Error: {e}") # Debug
+                    continue  # Diese Zeile konnte nicht als CSV geparst werden oder passte nicht
+
+            # Jetzt, parse die identifizierte Datenzeile (falls gefunden)
+            if data_line_string:
+                string_io = io.StringIO(data_line_string)
+                reader = csv.reader(string_io)
+                try:
+                    # Lies die EINE Datenzeile aus dem String der identifizierten Zeile
+                    gpt_sentiment_list_raw = next(reader)
+
+                    # Validiere und passe die Spaltenanzahl an (gleich wie vorher)
+                    if len(gpt_sentiment_list_raw) < expected_gpt_cols:
+                        print(
+                            f"Warning: Parsed GPT data row for '{track}' has fewer columns ({len(gpt_sentiment_list_raw)}) than expected ({expected_gpt_cols}). Padding with empty strings.")
+                        gpt_sentiment_list_raw.extend([''] * (expected_gpt_cols - len(gpt_sentiment_list_raw)))
+                    elif len(gpt_sentiment_list_raw) > expected_gpt_cols:
+                        print(
+                            f"Warning: Parsed GPT data row for '{track}' has more columns ({len(gpt_sentiment_list_raw)}) als expected ({expected_gpt_cols}). Truncating.")
+                        gpt_sentiment_list_raw = gpt_sentiment_list_raw[:expected_gpt_cols]
+
+                except Exception as e:
+                    print(
+                        f"Severe error parsing identified data_line_string '{data_line_string[:100]}...' for '{track}': {e}")
+                    gpt_sentiment_list_raw = [''] * expected_gpt_cols  # Setze auf leere Liste im Fehlerfall
+
+            else:
+                print(f"Warning: Could not identify a plausible data line string within the response for '{track}'.")
+                gpt_sentiment_list_raw = [''] * expected_gpt_cols  # Keine Datenzeile gefunden
+
+            # Extrahiere die Emotionswerte aus der geparsten Liste
+            # Dieser Block bleibt gleich wie in der vorherigen verbesserten Version
+            gpt_emotion_values = {}
+            # Stelle sicher, dass gpt_sentiment_list_raw die minimale Länge für Song, Artist, Lyrics hat
+            if len(gpt_sentiment_list_raw) >= 3:
+                gpt_emotions_order_expected = ['Joy', 'Trust', 'Fear', 'Surprise', 'Sadness', 'Disgust', 'Anger',
+                                               'Anticipation']
+                for i, emotion in enumerate(gpt_emotions_order_expected):
+                    # Überprüfe, ob der Index für die Emotion gültig ist
+                    if 3 + i < len(gpt_sentiment_list_raw):
+                        try:
+                            # Hole den Wert-String aus der geparsten Liste
+                            value_str_raw = gpt_sentiment_list_raw[3 + i]
+                            # --- VERBESSERUNG HIER ---
+                            # Entferne führende/nachfolgende Leerzeichen UND potenziell überzählige Anführungszeichen
+                            value_str = value_str_raw.strip().rstrip('"').rstrip(
+                                "'")  # rstrip('"') entfernt ein " am Ende, rstrip("'") entfernt ein ' am Ende
+
+                            # Prüfe nun, ob der bereinigte String "0" oder "1" ist
+                            if value_str in {'0', '1'}:
+                                gpt_emotion_values[emotion] = int(value_str)
+                            else:
+                                # Wenn der Wert nach der Bereinigung nicht '0' oder '1' ist, logge es und setze auf leeren String
+                                # print(f"Warning: GPT value for '{emotion}' in '{track}' is not '0' or '1' after cleaning: '{value_str}'. Raw: '{value_str_raw}'. Setting to ''.")
+                                gpt_emotion_values[emotion] = ''  # Speichere einen leeren String für ungültige Werte
+                        except (ValueError, IndexError) as e:
+                            # Fehler beim Zugriff auf Index oder bei der Konvertierung (sollte seltener passieren)
+                            print(
+                                f"Error processing GPT emotion value for '{emotion}' in '{track}'. Raw value: '{gpt_sentiment_list_raw[3 + i] if 3 + i < len(gpt_sentiment_list_raw) else 'N/A'}'. Error: {e}")
+                            gpt_emotion_values[emotion] = ''
+                    else:
+                        # Index ausserhalb der Grenzen der geparsten Liste
+                        print(
+                            f"Warning: Index out of bounds when extracting GPT emotion '{emotion}' for '{track}'. List length: {len(gpt_sentiment_list_raw)}.")
+                        gpt_emotion_values[emotion] = ''
+            else:
+                # Die geparste Liste hat weniger als 3 Spalten
+                print(
+                    f"Warning: Parsed GPT list for '{track}' has less than 3 columns. Cannot extract emotions. List: {gpt_sentiment_list_raw}")
+                for emotion in gpt_emotions_order:
+                    gpt_emotion_values[emotion] = ''
 
             # *** Naive Bayes Sentiment Vorhersage ***
             print("Performing Naive Bayes prediction...")
