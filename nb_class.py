@@ -7,6 +7,14 @@ from sklearn.metrics import accuracy_score, classification_report, f1_score
 
 import utils
 
+from config import (
+    EMOTION_WHEEL_CSV,
+    NRC_LEXICON_TXT,
+    EMOTION_LABELS,
+    EMOTION_COLUMNS_SLICE,
+    EXCLUDE_COLUMN
+)
+
 # --- Laden und Trainieren des Naive Bayes Modells ---
 # (Dieser Teil bleibt wie in deiner Originaldatei,
 # da das Training beim Skriptstart erfolgt)
@@ -14,13 +22,13 @@ import utils
 nb_classifiers = {}
 
 # Stelle sicher, dass der Pfad zu deiner CSV-Datei korrekt ist
-df = pd.read_csv('data/EmotionWheelFinal (1).csv')
+df = pd.read_csv(EMOTION_WHEEL_CSV)
 
 df['cleaned_lyrics'] = df['Lyrics'].apply(utils.clean_lyrics)
 
 # Load the NRC Hashtag Emotion Lexicon
 # Stelle sicher, dass der Pfad zu deinem Lexikon korrekt ist
-lexicon_path = "data/NRC-Hashtag-Emotion-Lexicon-v0.2.txt"
+lexicon_path = NRC_LEXICON_TXT
 lexicon_df = pd.read_csv(lexicon_path, delimiter='\t', header=None, names=['emotion', 'word', 'score'])
 
 lexicon_words = set(lexicon_df['word'].str.lower().str.replace(r'#', '', regex=True))
@@ -35,10 +43,13 @@ lyrics_bow = vectorizer.fit_transform(df['cleaned_lyrics'])
 X = lyrics_bow
 
 # List of emotion columns in the dataset
-# Passe die Spaltenindizes ggf. an deine tatsächliche CSV an
-emotion_columns = df.columns[4:-1]
-# Wir definieren hier die Liste der Emotionen, die wir verwenden
-emotions_list = [col for col in emotion_columns if col != 'Unnamed: 11'] # Filter 'Unnamed: 11'
+# Use EMOTION_LABELS from config to ensure consistency across all modules
+emotions_list = EMOTION_LABELS.copy()
+
+# Validate that all emotions exist in the dataframe
+missing_emotions = [emotion for emotion in emotions_list if emotion not in df.columns]
+if missing_emotions:
+    raise ValueError(f"Missing emotion columns in CSV: {missing_emotions}. Expected: {emotions_list}")
 
 
 # Training and storing each emotion classifier

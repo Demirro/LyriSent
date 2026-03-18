@@ -4,19 +4,12 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import pandas as pd
 import numpy as np
 
-# --- Konfiguration ---
-# Pfad, unter dem dein trainiertes BERT-Modell gespeichert ist
-# Beispiel: './trained_bert_model'
-BERT_MODEL_PATH = './trained_bert_model'
-# Name des vortrainierten Modells, das für das Fine-Tuning verwendet wurde
-# Beispiel: 'bert-base-uncased'
-PRETRAINED_MODEL_NAME = 'bert-base-uncased'
-
-# Die Reihenfolge der Emotionen, wie sie vom trainierten BERT-Modell ausgegeben wird
-# STELL SICHER, dass diese Reihenfolge mit der Reihenfolge übereinstimmt,
-# in der du deine Labels beim BERT-Training kodiert hast!
-# Diese Liste sollte die gleichen Emotionen wie in nb_class.py enthalten
-EMOTION_LABELS = ['Joy', 'Trust', 'Fear', 'Surprise', 'Sadness', 'Disgust', 'Anger', 'Anticipation']
+from config import (
+    BERT_MODEL_PATH, 
+    PRETRAINED_MODEL_NAME, 
+    EMOTION_LABELS, 
+    MAX_SEQ_LENGTH
+)
 
 # Gerät für Berechnungen (CPU oder GPU)
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -69,7 +62,7 @@ def predict_emotions_bert(lyrics):
     # truncation=True schneidet längere Sequenzen ab
     encoding = tokenizer(
         cleaned_lyrics,
-        max_length=128, # Passe dies an die Länge an, die du beim Training verwendet hast
+        max_length=MAX_SEQ_LENGTH, # Passe dies an die Länge an, die du beim Training verwendet hast
         padding='max_length',
         truncation=True,
         return_tensors='pt' # Gibt PyTorch Tensoren zurück

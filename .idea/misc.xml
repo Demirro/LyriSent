@@ -3,5 +3,5 @@
   <component name="Black">
     <option name="sdkName" value="LyriSent_BERT" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.13 (PyCharmMiscProject)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.13 (LyriSent_Bert)" project-jdk-type="Python SDK" />
 </project>

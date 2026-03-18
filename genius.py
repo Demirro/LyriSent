@@ -1,8 +1,12 @@
 from lyricsgenius import Genius
+import os
+from dotenv import load_dotenv
 
-token = 'bd48pq5qgrb_rMqwSQZ41Sb_5QOaJLFuviAs1JgfhH388FIdITL5TBML8aWTFK1S'
+load_dotenv()
+token = os.getenv('GENIUS_TOKEN')
+if not token:
+    raise ValueError("GENIUS_TOKEN not found in environment variables. Please check your .env file.")
 
-# this gets the lyrics of all the songs that have the pop tag.
 genius = Genius(token, timeout=5, retries=3, response_format='plain,html')
 genius.response_format='html'
 # page = 1

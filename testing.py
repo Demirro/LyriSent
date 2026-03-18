@@ -9,13 +9,20 @@ import io
 import csv
 import os
 
+from config import (
+    RADA_ANNOTATION_CSV,
+    SENTIMENT_COMPARISON_CSV,
+    EMOTION_LABELS,
+    RESULTS_DIR
+)
+
 # Ensure all emotions are the same across all models
 unified_emotion_labels = list(set(BERT_EMOTION_LABELS) & set(NB_EMOTION_LABELS))
 print(f"Unified Emotion Labels: {unified_emotion_labels}")
 
 # 1. Load data
-df_rada = pd.read_csv('data/RadaNewAnnotation (1).csv')
-df_predefined = pd.read_csv('data/sentiment_comparison.csv')
+df_rada = pd.read_csv(RADA_ANNOTATION_CSV)
+df_predefined = pd.read_csv(SENTIMENT_COMPARISON_CSV)
 
 print("\nStructure of df_rada:")
 print(df_rada.info())
@@ -108,7 +115,7 @@ def parse_openai_output(openai_output, song_name):
         print(f"No OpenAI output for {song_name}")
         return {emotion: np.nan for emotion in unified_emotion_labels}
 
-    gpt_emotions_order = ['Joy', 'Trust', 'Fear', 'Surprise', 'Sadness', 'Disgust', 'Anger', 'Anticipation']
+    gpt_emotions_order = EMOTION_LABELS
     expected_gpt_cols = 3 + len(gpt_emotions_order)
 
     # Try to find the data line
@@ -188,7 +195,7 @@ for emotion in unified_emotion_labels:
         results_df[f'Truth_{emotion}'] = np.nan
 
 # Save the comprehensive results
-output_dir = 'comparison_results'
+output_dir = RESULTS_DIR
 os.makedirs(output_dir, exist_ok=True)
 results_df.to_csv(os.path.join(output_dir, 'rada_all_predictions.csv'))
 print(f"\nSaved all predictions to {os.path.join(output_dir, 'rada_all_predictions.csv')}")

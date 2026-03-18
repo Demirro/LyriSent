@@ -10,27 +10,20 @@ import numpy as np
 import os
 import time
 
-# --- Konfiguration ---
-# Pfad zu deinem Dataset
-DATA_PATH = 'data/EmotionWheelFinal (1).csv'
-# Pfad, unter dem das trainierte Modell gespeichert werden soll
-SAVE_PATH = './trained_bert_model'
-# Name des vortrainierten BERT-Modells von Hugging Face
-PRETRAINED_MODEL_NAME = 'bert-base-uncased' # Ein gängiges, nicht casesensitives Modell
-# Die Spalten in deiner CSV, die die Emotionen als Labels enthalten
-# Passe die Indizes ggf. an deine tatsächliche CSV an
-# Annahme: Spalten 4 bis vorletzte Spalte (ohne 'Unnamed: 11')
-# Diese Liste MUSS die gleiche Reihenfolge und die gleichen Emotionen wie in bert_class.py haben!
-EMOTION_COLUMNS_SLICE = slice(4, -1) # Slice für die Spaltenindizes
-EXCLUDE_COLUMN = 'Unnamed: 11' # Spalte, die ausgeschlossen werden soll
-
-# Trainingsparameter
-MAX_SEQ_LENGTH = 512 # Maximale Länge der tokenisierten Sequenzen (BERT base typical: 512)
-BATCH_SIZE = 16      # Kleinere Batch-Größe für GPU-Speicher
-NUM_EPOCHS = 25       # Anzahl der Trainingsdurchläufe durch das Dataset
-LEARNING_RATE = 2e-5 # Typische Lernrate für BERT Fine-Tuning
-# Gewichtungsabnahme für den Optimierer
-WEIGHT_DECAY = 0.01
+from config import (
+    EMOTION_WHEEL_CSV,
+    MODEL_DIR as SAVE_PATH,
+    PRETRAINED_MODEL_NAME,
+    EMOTION_LABELS,
+    EMOTION_COLUMNS_SLICE,
+    EXCLUDE_COLUMN,
+    TEXT_COLUMN,
+    MAX_SEQ_LENGTH,
+    BATCH_SIZE,
+    NUM_EPOCHS,
+    LEARNING_RATE,
+    WEIGHT_DECAY
+)
 
 # --- Gerät Setup ---
 print(torch.cuda.is_available())
@@ -38,19 +31,14 @@ DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Using device: {DEVICE}")
 
 # --- Daten laden und vorbereiten ---
-print(f"Loading data from {DATA_PATH}...")
-df = pd.read_csv(DATA_PATH)
+print(f"Loading data from {EMOTION_WHEEL_CSV}...")
+df = pd.read_csv(EMOTION_WHEEL_CSV)
 
 # Identifiziere die Text- und Label-Spalten
-TEXT_COLUMN = 'Lyrics' # Passe den Namen der Spalte mit den Songtexten an
-
-# Dynamisch die tatsächlichen Emotionsspalten basierend auf Slice und Ausschluss ermitteln
-all_potential_emotion_cols = df.columns[EMOTION_COLUMNS_SLICE].tolist()
-EMOTION_LABELS = [col for col in all_potential_emotion_cols if col != EXCLUDE_COLUMN]
-
-print(f"Identified {len(EMOTION_LABELS)} emotion labels: {EMOTION_LABELS}")
-if not EMOTION_LABELS:
-    raise ValueError("No emotion columns found based on the provided slice and exclusion.")
+# Validate that EMOTION_LABELS from config exist in the dataframe
+missing_emotions = [emotion for emotion in EMOTION_LABELS if emotion not in df.columns]
+if missing_emotions:
+    raise ValueError(f"Missing emotion columns in CSV: {missing_emotions}. Expected: {EMOTION_LABELS}")
 
 # Extrahiere Texte und Labels
 texts = df[TEXT_COLUMN].tolist()

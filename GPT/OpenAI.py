@@ -1,9 +1,8 @@
-from os import environ
-
+import os
+from dotenv import load_dotenv
 from openai import OpenAI
 
-client = OpenAI()
-from openai import OpenAI
+load_dotenv()
 
 client = OpenAI()
 

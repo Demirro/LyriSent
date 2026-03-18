@@ -12,11 +12,15 @@ from genius import fetch_lyrics # Stelle sicher, dass diese Datei existiert und 
 import utils # Stelle sicher, dass diese Datei existiert
 import bert_class # Importiere die neue BERT-Klasse/Modul
 
+from config import (
+    SENTIMENT_COMPARISON_CSV,
+    EMOTION_LABELS
+)
 
 # --- Helfer-Funktionen (können aus deiner Original app.py übernommen werden) ---
 
 # Pfad zur CSV-Datei für die kombinierten Ergebnisse
-output_csv_file_path = 'data/sentiment_comparison.csv'
+output_csv_file_path = SENTIMENT_COMPARISON_CSV
 
 # Lade existierende Daten aus der kombinierten CSV, falls vorhanden
 existing_combined_data = []
