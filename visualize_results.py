@@ -7,7 +7,7 @@ from sklearn.metrics import confusion_matrix
 import warnings
 warnings.filterwarnings('ignore')
 
-from config import RESULTS_DIR, EMOTION_LABELS
+from config import RESULTS_DIR, EMOTION_LABELS as DEFAULT_EMOTION_LABELS
 
 # Set style for academic publications
 plt.style.use('seaborn-v0_8-paper')
@@ -53,6 +53,38 @@ def load_comparison_summary():
     if file_path.exists():
         return pd.read_csv(file_path, index_col=0)
     return None
+
+
+def infer_emotions(metrics_data: dict, predictions_df: pd.DataFrame | None = None) -> list[str]:
+    """
+    Infer which emotions were actually evaluated.
+
+    Preference order:
+    1) From metrics files (column 'Emotion')
+    2) From predictions file columns (Truth_*)
+    3) Fallback to config default order (Plutchik 8)
+
+    Returns emotions in a stable order (config order first, then any extras).
+    """
+    emotions_from_metrics: set[str] = set()
+    for df in metrics_data.values():
+        if "Emotion" in df.columns:
+            emotions_from_metrics.update(df["Emotion"].dropna().astype(str).tolist())
+
+    emotions_from_truth: set[str] = set()
+    if predictions_df is not None:
+        for c in predictions_df.columns:
+            if isinstance(c, str) and c.startswith("Truth_"):
+                emotions_from_truth.add(c.replace("Truth_", "", 1))
+
+    candidates = emotions_from_metrics or emotions_from_truth
+    if not candidates:
+        candidates = set(DEFAULT_EMOTION_LABELS)
+
+    # Stable ordering: config order first, then remaining in sorted order.
+    ordered = [e for e in DEFAULT_EMOTION_LABELS if e in candidates]
+    extras = sorted([e for e in candidates if e not in ordered])
+    return ordered + extras
 
 
 def plot_method_comparison(summary_df, save_path=None):
@@ -122,6 +154,7 @@ def plot_per_emotion_performance(metrics_data, save_path=None):
     # Prepare data for heatmap
     methods = list(metrics_data.keys())
     metrics_to_plot = ['Accuracy', 'Precision_Pos', 'Recall_Pos', 'F1_Pos']
+    emotions = infer_emotions(metrics_data)
     
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
     axes = axes.flatten()
@@ -131,7 +164,7 @@ def plot_per_emotion_performance(metrics_data, save_path=None):
         
         # Create matrix: rows = emotions, columns = methods
         heatmap_data = []
-        for emotion in EMOTION_LABELS:
+        for emotion in emotions:
             row = []
             for method in methods:
                 df = metrics_data[method]
@@ -144,7 +177,7 @@ def plot_per_emotion_performance(metrics_data, save_path=None):
             heatmap_data.append(row)
         
         heatmap_df = pd.DataFrame(heatmap_data, 
-                                 index=EMOTION_LABELS, 
+                                 index=emotions, 
                                  columns=methods)
         
         # Create heatmap
@@ -172,14 +205,15 @@ def plot_emotion_comparison_bar(metrics_data, save_path=None):
     Figure 3: Per-emotion accuracy comparison (grouped bar chart).
     """
     methods = list(metrics_data.keys())
-    x = np.arange(len(EMOTION_LABELS))
+    emotions = infer_emotions(metrics_data)
+    x = np.arange(len(emotions))
     width = 0.25
     
     fig, ax = plt.subplots(figsize=(14, 6))
     
     for i, method in enumerate(methods):
         accuracies = []
-        for emotion in EMOTION_LABELS:
+        for emotion in emotions:
             df = metrics_data[method]
             emotion_data = df[df['Emotion'] == emotion]
             if not emotion_data.empty and 'Accuracy' in emotion_data.columns:
@@ -202,7 +236,7 @@ def plot_emotion_comparison_bar(metrics_data, save_path=None):
     ax.set_ylabel('Accuracy', fontweight='bold')
     ax.set_title('Per-Emotion Accuracy Comparison', fontweight='bold', pad=15)
     ax.set_xticks(x)
-    ax.set_xticklabels(EMOTION_LABELS, rotation=45, ha='right')
+    ax.set_xticklabels(emotions, rotation=45, ha='right')
     ax.set_ylim([0, 1.1])
     ax.legend(loc='upper right', frameon=True, fancybox=True, shadow=True)
     ax.grid(axis='y', alpha=0.3, linestyle='--')
@@ -227,6 +261,7 @@ def plot_confusion_matrices(metrics_data, save_path=None):
         return
     
     df = pd.read_csv(predictions_file)
+    emotions = infer_emotions(metrics_data, predictions_df=df)
     methods = ['NB', 'BERT', 'OpenAI']
     
     fig, axes = plt.subplots(1, 3, figsize=(15, 4))
@@ -238,7 +273,7 @@ def plot_confusion_matrices(metrics_data, save_path=None):
         all_true = []
         all_pred = []
         
-        for emotion in EMOTION_LABELS:
+        for emotion in emotions:
             truth_col = f'Truth_{emotion}'
             pred_col = f'{method}_{emotion}'
             
@@ -268,7 +303,7 @@ def plot_confusion_matrices(metrics_data, save_path=None):
                    ha='center', va='center', transform=ax.transAxes)
             ax.set_title(f'{method}', fontweight='bold')
     
-    plt.suptitle('Confusion Matrices (Aggregated Across All Emotions)', 
+    plt.suptitle('Confusion Matrices (Aggregated over song×emotion pairs)', 
                 fontsize=14, fontweight='bold')
     plt.tight_layout()
     if save_path:
@@ -282,6 +317,7 @@ def plot_precision_recall_comparison(metrics_data, save_path=None):
     Figure 5: Precision-Recall comparison for positive class.
     """
     methods = list(metrics_data.keys())
+    emotions_all = infer_emotions(metrics_data)
     
     fig, ax = plt.subplots(figsize=(10, 8))
     
@@ -292,7 +328,7 @@ def plot_precision_recall_comparison(metrics_data, save_path=None):
         recalls = []
         emotions = []
         
-        for emotion in EMOTION_LABELS:
+        for emotion in emotions_all:
             df = metrics_data[method]
             emotion_data = df[df['Emotion'] == emotion]
             if not emotion_data.empty:
@@ -427,6 +463,8 @@ def main():
         return
     
     print(f"   Loaded metrics for: {', '.join(metrics_data.keys())}")
+    emotions = infer_emotions(metrics_data)
+    print(f"   Inferred evaluated emotions: {emotions}")
     
     # Generate all figures
     print("\n2. Generating visualizations...")

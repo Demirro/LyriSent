@@ -4,6 +4,7 @@ import io
 import re
 # import streamlit as st # Falls du Streamlit nutzt, einkommentieren
 import os # Importiere os für Pfadoperationen
+import json
 
 # Importiere deine lokalen Module
 import nb_class
@@ -16,6 +17,30 @@ from config import (
     SENTIMENT_COMPARISON_CSV,
     EMOTION_LABELS
 )
+
+# ---- OpenAI parsing helpers ----
+def _parse_openai_json_emotions(raw: str) -> dict | None:
+    """
+    Parse JSON output from GPT/OpenAI.py (preferred format).
+    Expected schema: {"emotions": {"Joy":0|1, ...}, "lyrics_excerpt": "..."}.
+    Returns dict of {emotion: 0/1} or None if parsing fails.
+    """
+    try:
+        obj = json.loads(raw)
+        emotions_obj = obj.get("emotions", {})
+        if not isinstance(emotions_obj, dict):
+            return None
+        parsed = {}
+        for e in EMOTION_LABELS:
+            v = emotions_obj.get(e, None)
+            if v in (0, 1, "0", "1"):
+                parsed[e] = int(v)
+            else:
+                parsed[e] = ""
+        return parsed
+    except Exception:
+        return None
+
 
 # --- Helfer-Funktionen (können aus deiner Original app.py übernommen werden) ---
 
@@ -154,10 +179,15 @@ def main():
                 print(f"An error occurred during OpenAI API call for '{track}': {e}")
                 gpt_response_string = ''  # Setze auf leer im Fehlerfall
 
-            # --- Noch robusteres Parsing der GPT-Antwort: Identifiziere die Datenzeile im Roh-String ---
+            # --- Prefer JSON parsing, fallback to robust CSV parsing ---
             gpt_sentiment_list_raw = []
-            gpt_emotions_order = ['Joy', 'Trust', 'Fear', 'Surprise', 'Sadness', 'Disgust', 'Anger', 'Anticipation']
+            gpt_emotions_order = EMOTION_LABELS
             expected_gpt_cols = 3 + len(gpt_emotions_order)  # Song Name,Artists,Lyrics + 8 Emotionen
+
+            gpt_emotion_values = _parse_openai_json_emotions(gpt_response_string) or {}
+
+            # If JSON parsing succeeded, we can skip the CSV heuristics entirely.
+            json_ok = bool(gpt_emotion_values)
 
             data_line_string = None  # Speichert den String der identifizierten Datenzeile
 
@@ -171,6 +201,8 @@ def main():
             header_keywords = ["Song Name", "Artists", "Lyrics", "Joy", "Trust"]  # Typische Wörter im Header
 
             for i, line in enumerate(raw_lines):
+                if json_ok:
+                    break
                 stripped_line = line.strip()
                 if not stripped_line:  # Überspringe leere Zeilen
                     continue
@@ -211,7 +243,7 @@ def main():
                     continue  # Diese Zeile konnte nicht als CSV geparst werden oder passte nicht
 
             # Jetzt, parse die identifizierte Datenzeile (falls gefunden)
-            if data_line_string:
+            if (not json_ok) and data_line_string:
                 string_io = io.StringIO(data_line_string)
                 reader = csv.reader(string_io)
                 try:
@@ -233,51 +265,34 @@ def main():
                         f"Severe error parsing identified data_line_string '{data_line_string[:100]}...' for '{track}': {e}")
                     gpt_sentiment_list_raw = [''] * expected_gpt_cols  # Setze auf leere Liste im Fehlerfall
 
-            else:
+            elif not json_ok:
                 print(f"Warning: Could not identify a plausible data line string within the response for '{track}'.")
                 gpt_sentiment_list_raw = [''] * expected_gpt_cols  # Keine Datenzeile gefunden
 
-            # Extrahiere die Emotionswerte aus der geparsten Liste
-            # Dieser Block bleibt gleich wie in der vorherigen verbesserten Version
-            gpt_emotion_values = {}
-            # Stelle sicher, dass gpt_sentiment_list_raw die minimale Länge für Song, Artist, Lyrics hat
-            if len(gpt_sentiment_list_raw) >= 3:
-                gpt_emotions_order_expected = ['Joy', 'Trust', 'Fear', 'Surprise', 'Sadness', 'Disgust', 'Anger',
-                                               'Anticipation']
-                for i, emotion in enumerate(gpt_emotions_order_expected):
-                    # Überprüfe, ob der Index für die Emotion gültig ist
-                    if 3 + i < len(gpt_sentiment_list_raw):
-                        try:
-                            # Hole den Wert-String aus der geparsten Liste
-                            value_str_raw = gpt_sentiment_list_raw[3 + i]
-                            # --- VERBESSERUNG HIER ---
-                            # Entferne führende/nachfolgende Leerzeichen UND potenziell überzählige Anführungszeichen
-                            value_str = value_str_raw.strip().rstrip('"').rstrip(
-                                "'")  # rstrip('"') entfernt ein " am Ende, rstrip("'") entfernt ein ' am Ende
-
-                            # Prüfe nun, ob der bereinigte String "0" oder "1" ist
-                            if value_str in {'0', '1'}:
-                                gpt_emotion_values[emotion] = int(value_str)
-                            else:
-                                # Wenn der Wert nach der Bereinigung nicht '0' oder '1' ist, logge es und setze auf leeren String
-                                # print(f"Warning: GPT value for '{emotion}' in '{track}' is not '0' or '1' after cleaning: '{value_str}'. Raw: '{value_str_raw}'. Setting to ''.")
-                                gpt_emotion_values[emotion] = ''  # Speichere einen leeren String für ungültige Werte
-                        except (ValueError, IndexError) as e:
-                            # Fehler beim Zugriff auf Index oder bei der Konvertierung (sollte seltener passieren)
-                            print(
-                                f"Error processing GPT emotion value for '{emotion}' in '{track}'. Raw value: '{gpt_sentiment_list_raw[3 + i] if 3 + i < len(gpt_sentiment_list_raw) else 'N/A'}'. Error: {e}")
+            # If JSON parsing failed, extract emotion values from parsed CSV row (existing behavior).
+            if not json_ok:
+                gpt_emotion_values = {}
+                if len(gpt_sentiment_list_raw) >= 3:
+                    for i, emotion in enumerate(gpt_emotions_order):
+                        if 3 + i < len(gpt_sentiment_list_raw):
+                            try:
+                                value_str_raw = gpt_sentiment_list_raw[3 + i]
+                                value_str = value_str_raw.strip().rstrip('"').rstrip("'")
+                                if value_str in {'0', '1'}:
+                                    gpt_emotion_values[emotion] = int(value_str)
+                                else:
+                                    gpt_emotion_values[emotion] = ''
+                            except (ValueError, IndexError) as e:
+                                print(
+                                    f"Error processing GPT emotion value for '{emotion}' in '{track}'. Raw value: '{gpt_sentiment_list_raw[3 + i] if 3 + i < len(gpt_sentiment_list_raw) else 'N/A'}'. Error: {e}")
+                                gpt_emotion_values[emotion] = ''
+                        else:
                             gpt_emotion_values[emotion] = ''
-                    else:
-                        # Index ausserhalb der Grenzen der geparsten Liste
-                        print(
-                            f"Warning: Index out of bounds when extracting GPT emotion '{emotion}' for '{track}'. List length: {len(gpt_sentiment_list_raw)}.")
+                else:
+                    print(
+                        f"Warning: Parsed GPT list for '{track}' has less than 3 columns. Cannot extract emotions. List: {gpt_sentiment_list_raw}")
+                    for emotion in gpt_emotions_order:
                         gpt_emotion_values[emotion] = ''
-            else:
-                # Die geparste Liste hat weniger als 3 Spalten
-                print(
-                    f"Warning: Parsed GPT list for '{track}' has less than 3 columns. Cannot extract emotions. List: {gpt_sentiment_list_raw}")
-                for emotion in gpt_emotions_order:
-                    gpt_emotion_values[emotion] = ''
 
             # *** Naive Bayes Sentiment Vorhersage ***
             print("Performing Naive Bayes prediction...")
@@ -315,7 +330,7 @@ def main():
             ]
 
             # Füge GPT-Ergebnisse hinzu (basierend auf der erwarteten Reihenfolge im GPT Prompt)
-            gpt_emotions_order = ['Joy', 'Trust', 'Fear', 'Surprise', 'Sadness', 'Disgust', 'Anger', 'Anticipation']
+            gpt_emotions_order = EMOTION_LABELS
             for emotion in gpt_emotions_order:
                  combined_row.append(gpt_emotion_values.get(emotion, '')) # Nutze get(), um Fehler zu vermeiden, falls eine Emotion fehlt
 

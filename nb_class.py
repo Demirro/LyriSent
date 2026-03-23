@@ -1,109 +1,110 @@
-# LyriSent_Bert/nb_class.py
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Dict, Optional, Tuple
+
+import joblib
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.metrics import accuracy_score, classification_report, f1_score
 
 import utils
+from config import EMOTION_LABELS, EMOTION_WHEEL_CSV, NRC_LEXICON_TXT, TEXT_COLUMN
 
-from config import (
-    EMOTION_WHEEL_CSV,
-    NRC_LEXICON_TXT,
-    EMOTION_LABELS,
-    EMOTION_COLUMNS_SLICE,
-    EXCLUDE_COLUMN
-)
 
-# --- Laden und Trainieren des Naive Bayes Modells ---
-# (Dieser Teil bleibt wie in deiner Originaldatei,
-# da das Training beim Skriptstart erfolgt)
-
-nb_classifiers = {}
-
-# Stelle sicher, dass der Pfad zu deiner CSV-Datei korrekt ist
-df = pd.read_csv(EMOTION_WHEEL_CSV)
-
-df['cleaned_lyrics'] = df['Lyrics'].apply(utils.clean_lyrics)
-
-# Load the NRC Hashtag Emotion Lexicon
-# Stelle sicher, dass der Pfad zu deinem Lexikon korrekt ist
-lexicon_path = NRC_LEXICON_TXT
-lexicon_df = pd.read_csv(lexicon_path, delimiter='\t', header=None, names=['emotion', 'word', 'score'])
-
-lexicon_words = set(lexicon_df['word'].str.lower().str.replace(r'#', '', regex=True))
-filtered_lexicon_words = {word for word in lexicon_words if isinstance(word, str)}
-
-vectorizer = CountVectorizer(vocabulary=filtered_lexicon_words)
-
-# Fit and transform the cleaned lyrics (Best Practice: Fit nur auf Trainingsdaten,
-# aber für feste Vokabulargrösse hier akzeptabel)
-lyrics_bow = vectorizer.fit_transform(df['cleaned_lyrics'])
-
-X = lyrics_bow
-
-# List of emotion columns in the dataset
-# Use EMOTION_LABELS from config to ensure consistency across all modules
 emotions_list = EMOTION_LABELS.copy()
 
-# Validate that all emotions exist in the dataframe
-missing_emotions = [emotion for emotion in emotions_list if emotion not in df.columns]
-if missing_emotions:
-    raise ValueError(f"Missing emotion columns in CSV: {missing_emotions}. Expected: {emotions_list}")
+
+@dataclass
+class NBArtifacts:
+    vectorizer: CountVectorizer
+    classifiers: Dict[str, MultinomialNB]
 
 
-# Training and storing each emotion classifier
-for emotion in emotions_list:
-    y = df[emotion]
-
-    # Split the data
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-
-    nb_classifier = MultinomialNB()
-
-    # Train the classifier
-    nb_classifier.fit(X_train, y_train)
-
-    # Store the classifier
-    nb_classifiers[emotion] = nb_classifier
-
-    # Predict on the test set (optional, for evaluation)
-    y_pred = nb_classifier.predict(X_test)
-    accuracy = accuracy_score(y_test, y_pred)
-    f1 = f1_score(y_test, y_pred, average='weighted')
-
-    # print(f"NB - Emotion: {emotion}, Accuracy: {accuracy:.4f}, F1-Score: {f1:.4f}")
+_ARTIFACTS: Optional[NBArtifacts] = None
 
 
-# --- Vorhersage Funktionen ---
+def _load_lexicon_vocabulary(path: Path) -> set[str]:
+    lexicon_df = pd.read_csv(path, delimiter="\t", header=None, names=["emotion", "word", "score"])
+    lexicon_words = set(lexicon_df["word"].astype(str).str.lower().str.replace(r"#", "", regex=True))
+    return {w for w in lexicon_words if w and w != "nan"}
 
-def preprocess_lyrics(new_lyrics):
+
+def train_nb(
+    emotion_wheel_csv: Path = EMOTION_WHEEL_CSV,
+    nrc_lexicon_txt: Path = NRC_LEXICON_TXT,
+    *,
+    test_size: float = 0.3,
+    random_state: int = 42,
+) -> NBArtifacts:
     """
-    Bereinigt und vektorisiert neue Songtexte für das Naive Bayes Modell.
+    Train one MultinomialNB per emotion using an NRC-lexicon-fixed vocabulary.
+    Training is explicit (not run at import time) for reproducibility.
     """
-    cleaned_lyrics = utils.clean_lyrics(new_lyrics)
-    # Transform the lyrics using the previously defined vectorizer
-    transformed_lyrics = vectorizer.transform([cleaned_lyrics])
-    return transformed_lyrics
+    df = pd.read_csv(emotion_wheel_csv)
 
-def predict_emotions(preprocessed_lyrics):
-    """
-    Macht Emotionsvorhersagen mit den trainierten Naive Bayes Klassifikatoren
-    und gibt die Wahrscheinlichkeiten gerundet zurück.
-    """
-    emotion_scores = {}
+    missing_emotions = [emotion for emotion in emotions_list if emotion not in df.columns]
+    if missing_emotions:
+        raise ValueError(f"Missing emotion columns in CSV: {missing_emotions}. Expected: {emotions_list}")
+    if TEXT_COLUMN not in df.columns:
+        raise ValueError(f"Missing text column '{TEXT_COLUMN}' in CSV. Available columns: {df.columns.tolist()}")
+
+    cleaned_texts = df[TEXT_COLUMN].astype(str).apply(utils.clean_lyrics)
+
+    vocab = _load_lexicon_vocabulary(nrc_lexicon_txt)
+    vectorizer = CountVectorizer(vocabulary=vocab)
+    X_all = vectorizer.transform(cleaned_texts)
+
+    # One consistent split across all labels (multi-label rows stay together).
+    idx = df.index.to_numpy()
+    idx_train, idx_test = train_test_split(idx, test_size=test_size, random_state=random_state)
+    X_train = X_all[idx_train]
+
+    classifiers: Dict[str, MultinomialNB] = {}
     for emotion in emotions_list:
-        classifier = nb_classifiers.get(emotion)
-        if classifier:
-            # predict_proba gibt [Wahrscheinlichkeit_Klasse_0, Wahrscheinlichkeit_Klasse_1] zurück
-            # Wir wollen die Wahrscheinlichkeit für die positive Klasse (1)
-            probability = classifier.predict_proba(preprocessed_lyrics)[0][1]
-            # Runde die Wahrscheinlichkeit auf zwei Dezimalstellen
-            rounded_probability = round(probability, 2)
-            emotion_scores[emotion] = rounded_probability
-        else:
-            emotion_scores[emotion] = None # Oder 0.0, je nach gewünschter Behandlung
+        y_train = df.loc[idx_train, emotion]
+        clf = MultinomialNB()
+        clf.fit(X_train, y_train)
+        classifiers[emotion] = clf
 
-    return emotion_scores
+    return NBArtifacts(vectorizer=vectorizer, classifiers=classifiers)
 
-# Füge hier ggf. weitere Hilfsfunktionen für NB hinzu
+
+def save_nb_artifacts(artifacts: NBArtifacts, path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump({"vectorizer": artifacts.vectorizer, "classifiers": artifacts.classifiers}, path)
+
+
+def load_nb_artifacts(path: Path) -> NBArtifacts:
+    payload = joblib.load(path)
+    return NBArtifacts(vectorizer=payload["vectorizer"], classifiers=payload["classifiers"])
+
+
+def get_nb_artifacts() -> NBArtifacts:
+    global _ARTIFACTS
+    if _ARTIFACTS is None:
+        _ARTIFACTS = train_nb()
+    return _ARTIFACTS
+
+
+def preprocess_lyrics(new_lyrics: str):
+    """Clean + vectorize lyrics for the NB model."""
+    artifacts = get_nb_artifacts()
+    cleaned = utils.clean_lyrics(new_lyrics)
+    return artifacts.vectorizer.transform([cleaned])
+
+
+def predict_emotions(preprocessed_lyrics) -> Dict[str, float]:
+    """Return per-emotion positive-class probabilities (rounded to 2 decimals)."""
+    artifacts = get_nb_artifacts()
+    scores: Dict[str, float] = {}
+    for emotion in emotions_list:
+        clf = artifacts.classifiers.get(emotion)
+        if clf is None:
+            scores[emotion] = float("nan")
+            continue
+        prob_pos = float(clf.predict_proba(preprocessed_lyrics)[0][1])
+        scores[emotion] = round(prob_pos, 2)
+    return scores

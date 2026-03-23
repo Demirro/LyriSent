@@ -9,6 +9,12 @@ from sklearn.metrics import accuracy_score, f1_score, roc_auc_score, average_pre
 import numpy as np
 import os
 import time
+import json
+import random
+import hashlib
+import platform
+import sys
+from datetime import datetime, timezone
 
 from config import (
     EMOTION_WHEEL_CSV,
@@ -25,7 +31,85 @@ from config import (
     WEIGHT_DECAY
 )
 
+# -------------------------
+# Reproducibility utilities
+# -------------------------
+SEED = 42
+
+
+def set_global_seed(seed: int) -> None:
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+    # Determinism: may reduce performance; some ops can still be nondeterministic.
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    try:
+        torch.use_deterministic_algorithms(True)
+    except Exception:
+        pass
+
+
+def sha256_file(path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def write_run_metadata(save_dir: str, extra: dict) -> None:
+    os.makedirs(save_dir, exist_ok=True)
+    meta_path = os.path.join(save_dir, "run_metadata.json")
+    payload = {
+        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "seed": SEED,
+        "python": sys.version,
+        "platform": platform.platform(),
+        "torch": getattr(torch, "__version__", None),
+        "cuda_available": bool(torch.cuda.is_available()),
+        "cuda_version": getattr(torch.version, "cuda", None),
+        "device": str(DEVICE) if "DEVICE" in globals() else None,
+        "transformers": None,
+        "sklearn": None,
+        "numpy": np.__version__,
+        "pandas": pd.__version__,
+        "config": {
+            "pretrained_model_name": PRETRAINED_MODEL_NAME,
+            "max_seq_length": MAX_SEQ_LENGTH,
+            "batch_size": BATCH_SIZE,
+            "num_epochs": NUM_EPOCHS,
+            "learning_rate": LEARNING_RATE,
+            "weight_decay": WEIGHT_DECAY,
+            "emotion_labels": EMOTION_LABELS,
+            "text_column": TEXT_COLUMN,
+        },
+        **extra,
+    }
+
+    # Optional imports for versions (avoid hard failures)
+    try:
+        import transformers  # type: ignore
+
+        payload["transformers"] = transformers.__version__
+    except Exception:
+        pass
+    try:
+        import sklearn  # type: ignore
+
+        payload["sklearn"] = sklearn.__version__
+    except Exception:
+        pass
+
+    with open(meta_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, ensure_ascii=False)
+
+
 # --- Gerät Setup ---
+set_global_seed(SEED)
 print(torch.cuda.is_available())
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Using device: {DEVICE}")
@@ -307,6 +391,25 @@ for epoch in range(NUM_EPOCHS):
         model.save_pretrained(SAVE_PATH)
         tokenizer.save_pretrained(SAVE_PATH)
         print(f"Saved best model to {SAVE_PATH} with Validation Macro F1: {best_val_f1_macro:.4f}")
+
+        # Save metadata for reproducibility
+        try:
+            dataset_hash = sha256_file(EMOTION_WHEEL_CSV)
+        except Exception:
+            dataset_hash = None
+        write_run_metadata(
+            str(SAVE_PATH),
+            extra={
+                "dataset": {"path": str(EMOTION_WHEEL_CSV), "sha256": dataset_hash},
+                "split": {
+                    "train_size": len(X_train),
+                    "val_size": len(X_val),
+                    "test_size": len(X_test),
+                    "random_state": 42,
+                },
+                "best_val_f1_macro": float(best_val_f1_macro),
+            },
+        )
 
 print("\nTraining finished.")
 

@@ -1,0 +1,44 @@
+{
+  "timestamp_utc": "2026-03-18T18:16:00.090158+00:00",
+  "seed": 42,
+  "python": "3.14.2 (tags/v3.14.2:df79316, Dec  5 2025, 17:18:21) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "torch": "2.10.0+cu128",
+  "cuda_available": true,
+  "cuda_version": "12.8",
+  "device": "cuda",
+  "transformers": "5.3.0",
+  "sklearn": "1.8.0",
+  "numpy": "2.3.5",
+  "pandas": "3.0.1",
+  "config": {
+    "pretrained_model_name": "bert-base-uncased",
+    "max_seq_length": 512,
+    "batch_size": 16,
+    "num_epochs": 25,
+    "learning_rate": 2e-05,
+    "weight_decay": 0.01,
+    "emotion_labels": [
+      "Joy",
+      "Trust",
+      "Fear",
+      "Surprise",
+      "Sadness",
+      "Disgust",
+      "Anger",
+      "Anticipation"
+    ],
+    "text_column": "Lyrics"
+  },
+  "dataset": {
+    "path": "C:\\Users\\theob\\PycharmProjects\\LyriSent_Bert\\data\\EmotionWheelFinal (1).csv",
+    "sha256": "6a1a50d22ddba73d78be81c79071a5f4f0a0c30fe3cc47d247dac8a6bd041c64"
+  },
+  "split": {
+    "train_size": 366,
+    "val_size": 79,
+    "test_size": 79,
+    "random_state": 42
+  },
+  "best_val_f1_macro": 0.5945282591188659
+}
