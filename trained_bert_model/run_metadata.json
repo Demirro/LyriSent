@@ -1,5 +1,5 @@
 {
-  "timestamp_utc": "2026-03-18T18:16:00.090158+00:00",
+  "timestamp_utc": "2026-03-23T15:47:07.917541+00:00",
   "seed": 42,
   "python": "3.14.2 (tags/v3.14.2:df79316, Dec  5 2025, 17:18:21) [MSC v.1944 64 bit (AMD64)]",
   "platform": "Windows-11-10.0.26200-SP0",
@@ -40,5 +40,5 @@
     "test_size": 79,
     "random_state": 42
   },
-  "best_val_f1_macro": 0.5945282591188659
+  "best_val_f1_macro": 0.5478679262967792
 }

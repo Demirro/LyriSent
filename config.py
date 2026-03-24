@@ -37,7 +37,8 @@ WEIGHT_DECAY = 0.01
 # API Configuration
 GENIUS_TOKEN = os.getenv('GENIUS_TOKEN')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-OPENAI_MODEL = 'gpt-4'
+OPENAI_MODEL = 'gpt-5.4'
+OPENAI_PROMPTING_MODES = ('zero_shot', 'few_shot')
 
 # CSV Column Configuration
 TEXT_COLUMN = 'Lyrics'

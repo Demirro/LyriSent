@@ -1,383 +1,233 @@
 # LyriSent_Bert/app.py
-import csv
-import io
-import re
-# import streamlit as st # Falls du Streamlit nutzt, einkommentieren
-import os # Importiere os für Pfadoperationen
+from __future__ import annotations
+
 import json
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
-# Importiere deine lokalen Module
+import pandas as pd
+
+import bert_class
 import nb_class
-from GPT.OpenAI import check_sentiment_openai # Stelle sicher, dass diese Datei existiert
-from genius import fetch_lyrics # Stelle sicher, dass diese Datei existiert und funktioniert
-import utils # Stelle sicher, dass diese Datei existiert
-import bert_class # Importiere die neue BERT-Klasse/Modul
-
-from config import (
-    SENTIMENT_COMPARISON_CSV,
-    EMOTION_LABELS
-)
-
-# ---- OpenAI parsing helpers ----
-def _parse_openai_json_emotions(raw: str) -> dict | None:
-    """
-    Parse JSON output from GPT/OpenAI.py (preferred format).
-    Expected schema: {"emotions": {"Joy":0|1, ...}, "lyrics_excerpt": "..."}.
-    Returns dict of {emotion: 0/1} or None if parsing fails.
-    """
-    try:
-        obj = json.loads(raw)
-        emotions_obj = obj.get("emotions", {})
-        if not isinstance(emotions_obj, dict):
-            return None
-        parsed = {}
-        for e in EMOTION_LABELS:
-            v = emotions_obj.get(e, None)
-            if v in (0, 1, "0", "1"):
-                parsed[e] = int(v)
-            else:
-                parsed[e] = ""
-        return parsed
-    except Exception:
-        return None
+import utils
+from GPT.OpenAI import check_sentiment_openai
+from config import EMOTION_LABELS, OPENAI_MODEL, OPENAI_PROMPTING_MODES, RESULTS_DIR
+from genius import fetch_lyrics
 
 
-# --- Helfer-Funktionen (können aus deiner Original app.py übernommen werden) ---
-
-# Pfad zur CSV-Datei für die kombinierten Ergebnisse
-output_csv_file_path = SENTIMENT_COMPARISON_CSV
-
-# Lade existierende Daten aus der kombinierten CSV, falls vorhanden
-existing_combined_data = []
-# Definiere hier den erwarteten Header, um Spalten korrekt zuordnen zu können
-# Wird beim ersten Schreiben erstellt, aber hilfreich beim Lesen existierender Daten
-expected_header = [
-    'Song', 'Artist', 'Lyrics',
-    'Joy_GPT', 'Trust_GPT', 'Fear_GPT', 'Surprise_GPT', 'Sadness_GPT', 'Disgust_GPT', 'Anger_GPT', 'Anticipation_GPT',
-    # Diese müssen zur Reihenfolge in nb_class.emotions_list passen
-    'Joy_NB', 'Trust_NB', 'Fear_NB', 'Surprise_NB', 'Sadness_NB', 'Disgust_NB', 'Anger_NB', 'Anticipation_NB',
-    # Diese müssen zur Reihenfolge in bert_class.EMOTION_LABELS passen
-    'Joy_BERT', 'Trust_BERT', 'Fear_BERT', 'Surprise_BERT', 'Sadness_BERT', 'Disgust_BERT', 'Anger_BERT', 'Anticipation_BERT'
-]
-# Stelle sicher, dass die NB und BERT Spaltennamen zur tatsächlichen Reihenfolge in den predict Funktionen passen!
-# Annahme: bert_class.EMOTION_LABELS ist identisch zu nb_class.emotions_list für einfache Zuordnung
-
-try:
-    # Prüfe, ob die Datei existiert und nicht leer ist
-    if os.path.exists(output_csv_file_path) and os.path.getsize(output_csv_file_path) > 0:
-        with open(output_csv_file_path, encoding='utf-8', newline='') as csvfile:
-            reader = csv.reader(csvfile)
-            header_row = next(reader) # Lese Header
-
-            # Optional: Überprüfe oder re-mappe Spalten basierend auf dem Header,
-            # falls sich die Reihenfolge oder Namen geändert haben könnten.
-            # Für jetzt gehen wir davon aus, der Header ist wie erwartet beim Lesen.
-            print(f"Loaded existing CSV with header: {header_row}")
-            existing_combined_data = list(reader)
-            print(f"Loaded {len(existing_combined_data)} existing rows.")
-
-except FileNotFoundError:
-    print(f"No existing CSV file found at {output_csv_file_path}. A new one will be created.")
-    existing_combined_data = []
-except Exception as e:
-    print(f"An error occurred while loading existing CSV: {e}")
-    existing_combined_data = []
-
-
-def is_track_checked(track_to_check, artist_to_check, existing_data):
-    """
-    Überprüft, ob ein Track bereits in den existierenden Daten vorhanden ist.
-    """
-    if not existing_data:
-        return False
-    # Gehe durch die existierenden Zeilen
-    for row in existing_data:
-         # Annahme: Song Name ist in Spalte 0, Artist in Spalte 1
-        if len(row) > 1 and row[0].casefold() == track_to_check.casefold() and row[1].casefold() == artist_to_check.casefold():
-            #print(f"Track '{track_to_check}' by '{artist_to_check}' was already checked. It will be skipped.")
-            return True
-    return False
-
-def _input(message, input_type=str):
-    """
-    Helferfunktion für Benutzereingaben.
-    """
+def _input(message: str, cast_type=str):
     while True:
         try:
-            return input_type(input(message))
+            return cast_type(input(message))
         except ValueError:
             print("Invalid input type. Please try again.")
         except EOFError:
-             print("\nInput stream closed. Exiting.")
-             exit() # Beende das Programm, wenn kein Input mehr möglich ist
+            print("\nInput stream closed. Exiting.")
+            raise SystemExit(0)
 
 
-# --- Hauptlogik ---
+def _collect_songs() -> list[tuple[str, str]]:
+    songs_list: list[tuple[str, str]] = []
+    prefab_check = input("Do you want to use the prefab list of songs (10 songs)? Yes (y/Y) or No (n/N)\n")
+
+    if prefab_check.casefold() in {"yes", "y"}:
+        songs_list = [
+            ("Childish Gambino", "This is America"),
+            ("brakence", "deepfacke"),
+            ("Peter Fox", "Haus am See"),
+            ("Feu! Chatterton", "J'ai tout mon temps"),
+            ("Bruno Mars", "Treasure"),
+            ("Ed Sheeran", "Shape Of You"),
+            ("The Japanese House", "Saw You In A Dream"),
+            ("Tom Misch", "Disco Yes"),
+            ("Radiohead", "Creep"),
+            ("Jacob Collier", "Hideaway"),
+        ]
+    elif prefab_check.casefold() in {"no", "n"}:
+        number_of_songs = _input("How many songs do you want to check: ", int)
+        for i in range(number_of_songs):
+            print(f"Song no. {i + 1}")
+            track_name = input("Track Name: ")
+            artist = input("Artist: ")
+            songs_list.append((artist, track_name))
+            print("")
+    else:
+        print("Invalid input. Please enter Yes (y/Y) or No (n/N)")
+        return []
+
+    return songs_list
+
+
+def _parse_openai_json_emotions(raw: str) -> dict[str, int | None]:
+    try:
+        obj = json.loads(raw)
+    except Exception:
+        return {emotion: None for emotion in EMOTION_LABELS}
+
+    emotions_obj = obj.get("emotions", {})
+    if not isinstance(emotions_obj, dict):
+        return {emotion: None for emotion in EMOTION_LABELS}
+
+    parsed: dict[str, int | None] = {}
+    for emotion in EMOTION_LABELS:
+        value = emotions_obj.get(emotion)
+        if value in (0, 1, "0", "1", True, False):
+            parsed[emotion] = int(bool(value)) if value in (True, False) else int(value)
+        else:
+            parsed[emotion] = None
+    return parsed
+
+
+def _predict_openai_modes(cleaned_lyrics: str) -> dict[str, dict[str, Any]]:
+    mode_results: dict[str, dict[str, Any]] = {}
+    modes = tuple(m for m in OPENAI_PROMPTING_MODES if str(m).strip()) or ("zero_shot",)
+
+    for mode in modes:
+        try:
+            payload, meta = check_sentiment_openai(
+                {"lyrics": cleaned_lyrics},
+                return_metadata=True,
+                prompting_mode=mode,
+            )
+            emotions = _parse_openai_json_emotions(payload)
+            mode_results[mode] = {
+                "emotions": emotions,
+                "metadata": meta,
+                "raw": payload,
+            }
+        except Exception as exc:
+            mode_results[mode] = {
+                "emotions": {emotion: None for emotion in EMOTION_LABELS},
+                "metadata": {
+                    "model": OPENAI_MODEL,
+                    "prompting_mode": mode,
+                    "error": str(exc),
+                },
+                "raw": "",
+            }
+    return mode_results
+
+
+def _predict_nb(cleaned_lyrics: str) -> dict[str, float | None]:
+    try:
+        preprocessed = nb_class.preprocess_lyrics(cleaned_lyrics)
+        predictions = nb_class.predict_emotions(preprocessed)
+        return {emotion: predictions.get(emotion, None) for emotion in nb_class.emotions_list}
+    except Exception as exc:
+        print(f"Naive Bayes prediction failed: {exc}")
+        return {emotion: None for emotion in nb_class.emotions_list}
+
+
+def _predict_bert(cleaned_lyrics: str) -> dict[str, float | None]:
+    if not bert_class.bert_load_success:
+        print("BERT model not loaded; writing empty BERT predictions.")
+        return {emotion: None for emotion in bert_class.EMOTION_LABELS}
+
+    try:
+        predictions = bert_class.predict_emotions_bert(cleaned_lyrics)
+        return {emotion: predictions.get(emotion, None) for emotion in bert_class.EMOTION_LABELS}
+    except Exception as exc:
+        print(f"BERT prediction failed: {exc}")
+        return {emotion: None for emotion in bert_class.EMOTION_LABELS}
+
+
+def _results_output_path() -> Path:
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_dir = Path(RESULTS_DIR) / f"{timestamp}_{OPENAI_MODEL}_unseen"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    return output_dir
+
+
+def _save_results(rows: list[dict[str, Any]], output_dir: Path) -> None:
+    if not rows:
+        print("No rows to save.")
+        return
+
+    df = pd.DataFrame(rows)
+    prediction_path = output_dir / "unseen_song_predictions.csv"
+    metadata_path = output_dir / "unseen_song_openai_metadata.jsonl"
+
+    df.to_csv(prediction_path, index=False, encoding="utf-8")
+
+    with open(metadata_path, "w", encoding="utf-8") as handle:
+        for row in rows:
+            base = {
+                "song": row.get("Song"),
+                "artist": row.get("Artist"),
+            }
+            for mode in (tuple(m for m in OPENAI_PROMPTING_MODES if str(m).strip()) or ("zero_shot",)):
+                meta_key = f"OpenAI_{mode}_metadata"
+                data = row.get(meta_key, {})
+                handle.write(json.dumps({**base, "mode": mode, **data}, ensure_ascii=False) + "\n")
+
+    print(f"Saved predictions to: {prediction_path}")
+    print(f"Saved OpenAI metadata to: {metadata_path}")
+
 
 def main():
-    songs_list = []
-    prefab_check = input('Do you want to use the prefab list of songs (10 songs)? Yes (y/Y) or No (n/N)\n')
+    print("LyriSent unseen-song test runner")
+    print("This runs NB + BERT + OpenAI (all configured prompting modes) on songs not seen during training.")
+    print("")
 
-    if prefab_check.casefold() in {'yes','y'}:
-        songs_list = [
-            ('Childish Gambino','This is America'),
-             ('brakence','deepfacke'),
-             ('Peter Fox','Haus am See'),
-             ('Feu! Chatterton', "J'ai tout mon temps"),
-             ('Bruno Mars', 'Treasure'),
-             ('Ed Sheeran', 'Shape Of You'),
-             ('The Japanese House', 'Saw You In A Dream'),
-             ('Tom Misch', 'Disco Yes'),
-             ('Radiohead', 'Creep'),
-             ('Jacob Collier', 'Hideaway'),
-        ]
-    elif prefab_check.casefold() in {'no','n'}:
-        number_of_songs = _input('How many songs do you want to check: ', int)
-        for i in range(number_of_songs):
-            print(f'Song no. {i+1}')
-            track_name = input('Track Name: ')
-            artist = input('Artist: ')
-            songs_list.append((artist, track_name))
-            print('\n')
-        print(f"Checking the following songs: {songs_list}")
-    else:
-        print('Invalid input. Please enter Yes (y/Y) or No (n/N)')
-        return # Programm beenden, wenn Input ungültig ist
+    songs = _collect_songs()
+    if not songs:
+        return
 
+    seen_pairs: set[tuple[str, str]] = set()
+    rows: list[dict[str, Any]] = []
 
-    # Liste zur Speicherung der neuen oder aktualisierten Daten
-    # Wir arbeiten mit einer Kopie der existierenden Daten und fügen neue hinzu
-    # oder aktualisieren, falls nötig.
-    # Liste zur Speicherung der neuen oder aktualisierten Daten
-    all_combined_data_rows = list(existing_combined_data)  # Erstelle eine veränderbare Kopie
+    for artist, track in songs:
+        key = (artist.casefold().strip(), track.casefold().strip())
+        if key in seen_pairs:
+            print(f"Skipping duplicate entry: '{track}' by '{artist}'")
+            continue
+        seen_pairs.add(key)
 
-    song_count = 0
-    for artist, track in songs_list:
-        track_already_processed = is_track_checked(track, artist, all_combined_data_rows)
+        print(f"\nProcessing '{track}' by '{artist}'...")
+        lyrics_payload = fetch_lyrics(artist, track)
+        lyrics = (lyrics_payload or {}).get("lyrics", "")
+        if not lyrics:
+            print("Could not fetch lyrics. Skipping.")
+            continue
 
-        if track_already_processed:
-            print(f"Skipping '{track}' by '{artist}' as it was already processed.")
-            continue  # Gehe zum nächsten Song
+        cleaned_lyrics = utils.clean_lyrics(lyrics)
 
-        print(f"Processing '{track}' by '{artist}'...")
+        nb_predictions = _predict_nb(cleaned_lyrics)
+        bert_predictions = _predict_bert(cleaned_lyrics)
+        openai_mode_results = _predict_openai_modes(cleaned_lyrics)
 
-        result = fetch_lyrics(artist, track)
-        if result and 'lyrics' in result and result['lyrics']:
-            lyrics = result['lyrics']
-            # Bereinige Lyrics für Modelle (NB, BERT) und sende sie auch an GPT
-            cleaned_lyrics = utils.clean_lyrics(lyrics)
+        row: dict[str, Any] = {
+            "Song": track,
+            "Artist": artist,
+            "Lyrics_excerpt": cleaned_lyrics[:200] + ("..." if len(cleaned_lyrics) > 200 else ""),
+        }
 
-            # --- OpenAI Sentiment Analyse ---
-            print("Fetching GPT response...")
-            song_data_for_openai = {'lyrics': cleaned_lyrics}
-            gpt_response_string = ''
-            try:
-                gpt_response_string = check_sentiment_openai(song_data_for_openai)
-                print(f"GPT Response Received (raw):\n---\n{gpt_response_string}\n---")
+        for emotion in EMOTION_LABELS:
+            row[f"NB_{emotion}"] = nb_predictions.get(emotion, None)
+        for emotion in EMOTION_LABELS:
+            row[f"BERT_{emotion}"] = bert_predictions.get(emotion, None)
 
-            except Exception as e:
-                print(f"An error occurred during OpenAI API call for '{track}': {e}")
-                gpt_response_string = ''  # Setze auf leer im Fehlerfall
+        for mode, mode_data in openai_mode_results.items():
+            emotions = mode_data.get("emotions", {})
+            for emotion in EMOTION_LABELS:
+                row[f"OpenAI_{mode}_{emotion}"] = emotions.get(emotion, None)
 
-            # --- Prefer JSON parsing, fallback to robust CSV parsing ---
-            gpt_sentiment_list_raw = []
-            gpt_emotions_order = EMOTION_LABELS
-            expected_gpt_cols = 3 + len(gpt_emotions_order)  # Song Name,Artists,Lyrics + 8 Emotionen
+            meta = mode_data.get("metadata", {})
+            row[f"OpenAI_{mode}_model"] = meta.get("model", OPENAI_MODEL)
+            row[f"OpenAI_{mode}_attempts"] = meta.get("attempts", None)
+            row[f"OpenAI_{mode}_prompt_tokens"] = meta.get("prompt_tokens", None)
+            row[f"OpenAI_{mode}_completion_tokens"] = meta.get("completion_tokens", None)
+            row[f"OpenAI_{mode}_total_tokens"] = meta.get("total_tokens", None)
+            row[f"OpenAI_{mode}_estimated_cost_usd"] = meta.get("estimated_cost_usd", None)
+            row[f"OpenAI_{mode}_metadata"] = meta
 
-            gpt_emotion_values = _parse_openai_json_emotions(gpt_response_string) or {}
+        rows.append(row)
+        print("Finished.")
 
-            # If JSON parsing succeeded, we can skip the CSV heuristics entirely.
-            json_ok = bool(gpt_emotion_values)
-
-            data_line_string = None  # Speichert den String der identifizierten Datenzeile
-
-            # Teile die rohe Antwort in individuelle Zeilen auf
-            raw_lines = gpt_response_string.strip().splitlines()
-            # print(f"GPT Parsing: Split raw response into {len(raw_lines)} lines.") # Debug
-
-            # Gehe Zeile für Zeile durch, um die Datenzeile zu finden.
-            # Die Datenzeile sollte eine plausible Anzahl von Kommas (für die Spalten) enthalten
-            # und wahrscheinlich nicht die Header-Namen.
-            header_keywords = ["Song Name", "Artists", "Lyrics", "Joy", "Trust"]  # Typische Wörter im Header
-
-            for i, line in enumerate(raw_lines):
-                if json_ok:
-                    break
-                stripped_line = line.strip()
-                if not stripped_line:  # Überspringe leere Zeilen
-                    continue
-
-                # Heuristik 1: Eine plausible Datenzeile hat ungefähr die erwartete Anzahl von Kommas
-                # Wir erwarten N Spalten, also N-1 Kommas. Geben wir einen kleinen Puffer.
-                num_commas = stripped_line.count(',')
-                if num_commas < expected_gpt_cols - 3 or num_commas > expected_gpt_cols + 3:  # Erwarte N-1 Kommas, Puffer +-2
-                    # print(f"GPT Parsing: Line {i+1} skipped (comma count {num_commas} not plausible).") # Debug
-                    continue
-
-                # Heuristik 2: Eine Datenzeile sollte typischerweise nicht die Header-Keywords enthalten
-                if any(keyword in stripped_line for keyword in header_keywords):
-                    # print(f"GPT Parsing: Line {i+1} skipped (contains header keywords).") # Debug
-                    continue
-
-                # Heuristik 3: Versuche, diese einzelne Zeile als CSV zu parsen und prüfe die Spaltenanzahl
-                try:
-                    string_io_line = io.StringIO(stripped_line)
-                    reader_line = csv.reader(string_io_line)
-                    parsed_row_from_line = next(reader_line)
-
-                    # Heuristik 4: Prüfe, ob die geparste Zeile eine plausible Spaltenanzahl hat
-                    # Innerhalb eines engen Bereichs um die erwartete Anzahl
-                    if len(parsed_row_from_line) >= expected_gpt_cols - 2 and len(
-                            parsed_row_from_line) <= expected_gpt_cols + 2:
-                        # Diese Zeile scheint eine plausible Datenzeile zu sein!
-                        data_line_string = stripped_line  # Speichere den String dieser Zeile
-                        print(
-                            f"GPT Parsing: Identified plausible data line string (line {i + 1}, {len(parsed_row_from_line)} cols): {data_line_string}")  # Debug
-                        break  # Datenzeile gefunden, Suche beenden
-
-                    # else:
-                    # print(f"GPT Parsing: Line {i+1} parsed into {len(parsed_row_from_line)} cols, outside plausible range.") # Debug
-
-                except Exception as e:
-                    # print(f"GPT Parsing: Could not parse line {i+1} as CSV: {stripped_line[:100]}... Error: {e}") # Debug
-                    continue  # Diese Zeile konnte nicht als CSV geparst werden oder passte nicht
-
-            # Jetzt, parse die identifizierte Datenzeile (falls gefunden)
-            if (not json_ok) and data_line_string:
-                string_io = io.StringIO(data_line_string)
-                reader = csv.reader(string_io)
-                try:
-                    # Lies die EINE Datenzeile aus dem String der identifizierten Zeile
-                    gpt_sentiment_list_raw = next(reader)
-
-                    # Validiere und passe die Spaltenanzahl an (gleich wie vorher)
-                    if len(gpt_sentiment_list_raw) < expected_gpt_cols:
-                        print(
-                            f"Warning: Parsed GPT data row for '{track}' has fewer columns ({len(gpt_sentiment_list_raw)}) than expected ({expected_gpt_cols}). Padding with empty strings.")
-                        gpt_sentiment_list_raw.extend([''] * (expected_gpt_cols - len(gpt_sentiment_list_raw)))
-                    elif len(gpt_sentiment_list_raw) > expected_gpt_cols:
-                        print(
-                            f"Warning: Parsed GPT data row for '{track}' has more columns ({len(gpt_sentiment_list_raw)}) als expected ({expected_gpt_cols}). Truncating.")
-                        gpt_sentiment_list_raw = gpt_sentiment_list_raw[:expected_gpt_cols]
-
-                except Exception as e:
-                    print(
-                        f"Severe error parsing identified data_line_string '{data_line_string[:100]}...' for '{track}': {e}")
-                    gpt_sentiment_list_raw = [''] * expected_gpt_cols  # Setze auf leere Liste im Fehlerfall
-
-            elif not json_ok:
-                print(f"Warning: Could not identify a plausible data line string within the response for '{track}'.")
-                gpt_sentiment_list_raw = [''] * expected_gpt_cols  # Keine Datenzeile gefunden
-
-            # If JSON parsing failed, extract emotion values from parsed CSV row (existing behavior).
-            if not json_ok:
-                gpt_emotion_values = {}
-                if len(gpt_sentiment_list_raw) >= 3:
-                    for i, emotion in enumerate(gpt_emotions_order):
-                        if 3 + i < len(gpt_sentiment_list_raw):
-                            try:
-                                value_str_raw = gpt_sentiment_list_raw[3 + i]
-                                value_str = value_str_raw.strip().rstrip('"').rstrip("'")
-                                if value_str in {'0', '1'}:
-                                    gpt_emotion_values[emotion] = int(value_str)
-                                else:
-                                    gpt_emotion_values[emotion] = ''
-                            except (ValueError, IndexError) as e:
-                                print(
-                                    f"Error processing GPT emotion value for '{emotion}' in '{track}'. Raw value: '{gpt_sentiment_list_raw[3 + i] if 3 + i < len(gpt_sentiment_list_raw) else 'N/A'}'. Error: {e}")
-                                gpt_emotion_values[emotion] = ''
-                        else:
-                            gpt_emotion_values[emotion] = ''
-                else:
-                    print(
-                        f"Warning: Parsed GPT list for '{track}' has less than 3 columns. Cannot extract emotions. List: {gpt_sentiment_list_raw}")
-                    for emotion in gpt_emotions_order:
-                        gpt_emotion_values[emotion] = ''
-
-            # *** Naive Bayes Sentiment Vorhersage ***
-            print("Performing Naive Bayes prediction...")
-            try:
-                preprocessed_lyrics_nb = nb_class.preprocess_lyrics(cleaned_lyrics)
-                emotion_predictions_nb = nb_class.predict_emotions(preprocessed_lyrics_nb)
-                #print(f"Naive Bayes Predictions: {emotion_predictions_nb}")
-            except Exception as e:
-                print(f"An error occurred during Naive Bayes prediction for '{track}': {e}")
-                emotion_predictions_nb = {emotion: None for emotion in nb_class.emotions_list}
-
-
-            # *** BERT Sentiment Vorhersage ***
-            print("Performing BERT prediction...")
-            emotion_predictions_bert = {}
-            if bert_class.bert_load_success: # Nur versuchen, wenn das Modell geladen wurde
-                 try:
-                     emotion_predictions_bert = bert_class.predict_emotions_bert(lyrics) # Kann bereinigte oder rohe Texte nehmen, je nach bert_class
-                     #print(f"BERT Predictions: {emotion_predictions_bert}")
-                 except Exception as e:
-                     print(f"An error occurred during BERT prediction for '{track}': {e}")
-                     emotion_predictions_bert = {emotion: None for emotion in bert_class.EMOTION_LABELS}
-            else:
-                 print("BERT model not loaded, skipping BERT prediction.")
-                 emotion_predictions_bert = {emotion: None for emotion in bert_class.EMOTION_LABELS}
-
-
-            # *** Kombinieren der Ergebnisse ***
-
-            # Erstelle eine neue Zeile für die kombinierten Daten
-            combined_row = [
-                track,
-                artist,
-                cleaned_lyrics[:200] + '...' if len(cleaned_lyrics) > 200 else cleaned_lyrics, # Begrenze Lyrics Länge für CSV Anzeige
-            ]
-
-            # Füge GPT-Ergebnisse hinzu (basierend auf der erwarteten Reihenfolge im GPT Prompt)
-            gpt_emotions_order = EMOTION_LABELS
-            for emotion in gpt_emotions_order:
-                 combined_row.append(gpt_emotion_values.get(emotion, '')) # Nutze get(), um Fehler zu vermeiden, falls eine Emotion fehlt
-
-            # Füge Naive Bayes Ergebnisse hinzu (basierend auf der Reihenfolge in nb_class.emotions_list)
-            for emotion in nb_class.emotions_list:
-                 combined_row.append(emotion_predictions_nb.get(emotion, None)) # Nutze get()
-
-            # Füge BERT Ergebnisse hinzu (basierend auf der Reihenfolge in bert_class.EMOTION_LABELS)
-            for emotion in bert_class.EMOTION_LABELS:
-                 combined_row.append(emotion_predictions_bert.get(emotion, None)) # Nutze get()
-
-
-            # Füge die neue Zeile zu den gesammelten Daten hinzu
-            all_combined_data_rows.append(combined_row)
-
-            song_count += 1
-        else:
-            print(f"Could not fetch lyrics for '{track}' by '{artist}' or lyrics were empty.")
-
-
-    # *** Speichern der kombinierten Daten in einer neuen CSV-Datei ***
-    print(f"\nSaving collected data to {output_csv_file_path}...")
-    try:
-        with open(output_csv_file_path, mode='w', encoding='utf-8', newline='') as csvfile:
-            writer = csv.writer(csvfile)
-
-            # Definiere den endgültigen Header
-            final_header = [
-                'Song', 'Artist', 'Lyrics',
-                'Joy_GPT', 'Trust_GPT', 'Fear_GPT', 'Surprise_GPT', 'Sadness_GPT', 'Disgust_GPT', 'Anger_GPT', 'Anticipation_GPT'
-            ]
-            # Füge die Naive Bayes Emotionsspalten hinzu basierend auf nb_class.emotions_list
-            nb_header_cols = [f"{emotion}_NB" for emotion in nb_class.emotions_list]
-            final_header.extend(nb_header_cols)
-            # Füge die BERT Emotionsspalten hinzu basierend auf bert_class.EMOTION_LABELS
-            bert_header_cols = [f"{emotion}_BERT" for emotion in bert_class.EMOTION_LABELS]
-            final_header.extend(bert_header_cols)
-
-
-            writer.writerow(final_header)  # Schreibe die Kopfzeile
-            writer.writerows(all_combined_data_rows) # Schreibe alle gesammelten Daten
-
-    except Exception as e:
-        print(f"An error occurred while writing to the CSV file: {e}")
-
-    print(f"Data has been saved to {output_csv_file_path}")
-    print(f"Processed {song_count} new songs.")
+    output_dir = _results_output_path()
+    _save_results(rows, output_dir)
+    print(f"Processed {len(rows)} songs.")
 
 
 if __name__ == "__main__":

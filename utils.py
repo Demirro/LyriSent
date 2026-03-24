@@ -1,78 +1,65 @@
 import re
 
-# Kompiliere ein RegEx-Muster für häufige nicht-lyrische Muster am Anfang einer Datei
-# Dieses Muster sucht nach Zeilen, die z.B. mit Ziffern (Contributors),
-# oder spezifischen Phrasen wie 'LyricsTaken from', 'Read More', 'Translations' beginnen oder enthalten.
-# Wir machen es optional am Anfang der Zeile (^) oder irgendwo in der Zeile.
+# Regex for common non-lyric prefixes and metadata lines.
 NON_LYRIC_START_PATTERNS = re.compile(
-    r"^\s*\d+\s*Contributors|"  # Beginnt mit Ziffern und "Contributors" (mit optionalen Leerzeichen)
+    r"^\s*\d+\s*Contributors|"  # Starts with numeric contributor count.
     r"^\s*\d+\s*Contributor|"
-    r"^\s*Translations|"      # Beginnt mit "Translations"
-    r"LyricsTaken from|"      # Enthält "LyricsTaken from"
+    r"^\s*Translations|"      # Starts with "Translations".
+    r"LyricsTaken from|"      # Contains "LyricsTaken from".
     r"Lyrics"
-    r"Read More",             # Enthält "Read More"
-    re.IGNORECASE              # Ignoriert Groß-/Kleinschreibung
+    r"Read More",             # Contains "Read More".
+    re.IGNORECASE             # Case-insensitive matching.
 )
 
 
 def clean_lyrics(text):
-    """
-    Bereinigt Songtexte: Entfernt HTML-Zeilenumbrüche, Abschnitt-Header ([...]),
-    häufige Einleitungsbeschreibungen/Metadaten, Satzzeichen und konvertiert in Kleinbuchstaben.
-    Behält Zeilenumbrüche zwischen Lyric-Zeilen bei, bis zur finalen Glättung.
-    """
+    """Clean lyrics text and normalize spacing/casing."""
     if not text:
         return ""
 
-    # 1. HTML-Zeilenumbrüche ersetzen
+    # 1) Replace HTML line breaks.
     text = text.replace("<br>", "\n")
 
-    # 2. Text in Zeilen aufteilen
+    # 2) Split text into lines.
     lines = text.splitlines()
     processed_lines = []
-    lyrics_started = False # Flag, um zu markieren, wann wir wahrscheinlich bei den echten Lyrics sind
+    lyrics_started = False  # Tracks when likely lyric lines begin.
 
-    # 3. Zeilen verarbeiten: Entferne Header und identifiziere Beginn der Lyrics
+    # 3) Remove headers and detect lyric start.
     for line in lines:
-        # Entferne führende/nachfolgende Leerzeichen
+        # Trim leading/trailing whitespace.
         stripped_line = line.strip()
 
-        # Ignoriere Zeilen mit Abschnitt-Headern ([...])
+        # Skip section headers like [Verse], [Chorus], etc.
         if re.search(r"\[.*?\]", stripped_line):
             continue
 
-        # Ignoriere leere Zeilen am Anfang, bis wir etwas finden, das wie ein Lyric aussieht
+        # Skip non-lyric lines until likely lyrics begin.
         if not lyrics_started:
-            # Ignoriere leere Zeilen
+            # Skip empty lines.
             if not stripped_line:
                 continue
-            # Ignoriere Zeilen, die typische nicht-lyrische Muster am Anfang enthalten
+            # Skip common non-lyric metadata lines.
             if NON_LYRIC_START_PATTERNS.search(stripped_line):
-                 # print(f"Skipping potential non-lyric line: {stripped_line}") # Debug-Ausgabe
+                 # print(f"Skipping potential non-lyric line: {stripped_line}")  # Debug output
                  continue
 
-            # Wenn wir hier ankommen, haben wir eine nicht-leere Zeile gefunden,
-            # die keinen typischen Header oder non-lyric Startpattern enthält.
-            # Wir nehmen an, dies ist der Beginn der Lyrics oder nahe dran.
+            # First valid line is treated as lyric start.
             lyrics_started = True
-            processed_lines.append(stripped_line) # Füge die erste Lyric-Zeile hinzu
+            processed_lines.append(stripped_line)
         else:
-            # Sobald lyrics_started True ist, fügen wir alle nachfolgenden Zeilen hinzu
-            # (auch leere Zeilen, um die Strophenstruktur zu erhalten, bis zur finalen Glättung)
+            # Keep remaining lines as part of lyrics content.
             processed_lines.append(stripped_line)
 
 
-    # 4. Verbleibende Zeilen zu einem String zusammenfügen
-    # Wir verwenden "\n" um die ursprünglichen Zeilenumbrüche beizubehalten
+    # 4) Join remaining lines.
     intermediate_text = "\n".join(processed_lines)
 
-    # 5. Satzzeichen entfernen und in Kleinbuchstaben umwandeln
-    # Dies sollte auf den gesamten Text angewendet werden, nachdem die Struktur bereinigt ist
-    processed_text = re.sub(r"[^\w\s\n]", "", intermediate_text) # Behalte \n hier noch
+    # 5) Remove punctuation and lowercase text.
+    processed_text = re.sub(r"[^\w\s\n]", "", intermediate_text)  # Keep newlines at this step.
     processed_text = processed_text.lower()
 
-    # 6. Mehrere Leerzeichen, Newlines und Satzzeichen-Reste durch ein einzelnes Leerzeichen ersetzen und trimmen
-    # Das glättet den Text zu einem einzigen Block mit Wörtern, getrennt durch einzelne Leerzeichen.
+    # 6) Collapse whitespace and trim.
     processed_text = re.sub(r"\s+", " ", processed_text).strip()
 
 

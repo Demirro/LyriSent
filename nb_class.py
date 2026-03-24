@@ -28,8 +28,16 @@ _ARTIFACTS: Optional[NBArtifacts] = None
 
 def _load_lexicon_vocabulary(path: Path) -> set[str]:
     lexicon_df = pd.read_csv(path, delimiter="\t", header=None, names=["emotion", "word", "score"])
-    lexicon_words = set(lexicon_df["word"].astype(str).str.lower().str.replace(r"#", "", regex=True))
-    return {w for w in lexicon_words if w and w != "nan"}
+    # Guard against mixed dtypes/NaN values: CountVectorizer vocabulary must be pure strings.
+    cleaned_words = (
+        lexicon_df["word"]
+        .fillna("")
+        .astype(str)
+        .str.lower()
+        .str.replace(r"#", "", regex=True)
+        .str.strip()
+    )
+    return {w for w in cleaned_words.tolist() if isinstance(w, str) and w and w != "nan"}
 
 
 def train_nb(
