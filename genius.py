@@ -3,40 +3,33 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-token = os.getenv('GENIUS_TOKEN')
-if not token:
-    raise ValueError("GENIUS_TOKEN not found in environment variables. Please check your .env file.")
+token = os.getenv("GENIUS_TOKEN")
 
-genius = Genius(token, timeout=5, retries=3, response_format='plain,html')
-genius.response_format='html'
-# page = 1
-# lyrics = []
-# while page<2:
-#     print(page)
-#     res = genius.tag('pop', page=page)
-#     for hit in res['hits']:
-#         song_lyrics = genius.lyrics(song_url=hit['url'])
-#         lyrics.append(song_lyrics)
-#     page = res['next_page']
-#
-# print(lyrics)
 
-# STRING STUFF
+def _genius_client(genius_token: str | None) -> Genius | None:
+    tok = (genius_token or "").strip() or (token or "").strip()
+    if not tok:
+        return None
+    g = Genius(tok, timeout=5, retries=3, response_format="plain,html")
+    g.response_format = "html"
+    return g
 
-def fetch_lyrics(artist_name, track_name):
+
+def fetch_lyrics(artist_name, track_name, genius_token: str | None = None):
+    g = _genius_client(genius_token)
+    if g is None:
+        print("Genius: no token (set GENIUS_TOKEN or pass genius_token).")
+        return None
     try:
-        # Search for the song on Genius
-        song = genius.search_song(track_name, artist_name)
+        song = g.search_song(track_name, artist_name)
         if song is not None:
             return {
-                'artist': artist_name,
-                'track': track_name,
-                'lyrics': song.lyrics
+                "artist": artist_name,
+                "track": track_name,
+                "lyrics": song.lyrics,
             }
-        else:
-            print(f"Lyrics not found for {artist_name} - {track_name}")
-            return None
+        print(f"Lyrics not found for {artist_name} - {track_name}")
+        return None
     except Exception as e:
         print(f"Error fetching lyrics for {artist_name} - {track_name}: {e}")
         return None
-

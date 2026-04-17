@@ -727,12 +727,12 @@ def plot_metric_distribution(metrics_data, save_path=None):
 
 def create_summary_table(summary_df, save_path=None):
     """
-    Create a LaTeX-formatted summary table for academic papers.
+    Create a CSV summary table for quick reporting.
     """
     if summary_df is None:
         return
     
-    # Format the dataframe for LaTeX
+    # Format the dataframe for readable CSV export.
     summary_df_formatted = summary_df.copy()
     summary_df_formatted['avg_accuracy'] = summary_df_formatted['avg_accuracy'].apply(
         lambda x: f"{x:.3f} ± {summary_df_formatted.loc[summary_df_formatted.index[summary_df_formatted['avg_accuracy'] == x], 'std_accuracy'].values[0]:.3f}")
@@ -742,24 +742,10 @@ def create_summary_table(summary_df, save_path=None):
     summary_df_formatted = summary_df_formatted[['avg_accuracy', 'avg_f1_weighted', 'n_emotions']]
     summary_df_formatted.columns = ['Accuracy (Mean ± Std)', 'F1-Score (Weighted)', 'N Emotions']
     
-    # Save as CSV and print LaTeX
+    # Save as CSV only.
     if save_path:
-        summary_df_formatted.to_csv(save_path.replace('.tex', '.csv'))
-        print(f"Saved CSV table: {save_path.replace('.tex', '.csv')}")
-    
-    # Print LaTeX table code
-    latex_table = summary_df_formatted.to_latex(
-        float_format="%.3f",
-        caption="Overall Performance Comparison of Methods",
-        label="tab:method_comparison"
-    )
-    
-    tex_path = FIGURES_DIR / 'summary_table.tex'
-    with open(tex_path, 'w') as f:
-        f.write(latex_table)
-    print(f"Saved LaTeX table: {tex_path}")
-    print("\nLaTeX Table Code:")
-    print(latex_table)
+        summary_df_formatted.to_csv(save_path)
+        print(f"Saved summary table: {save_path}")
 
 
 def main():
@@ -855,7 +841,7 @@ def main():
         if summary_df is not None:
             create_summary_table(
                 summary_df,
-                save_path=str(FIGURES_DIR / 'summary_table.tex')
+                save_path=str(FIGURES_DIR / 'summary_table.csv')
             )
         else:
             print("   Warning: methods_comparison_summary.csv missing; skipping summary table.")

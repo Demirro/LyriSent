@@ -32,4 +32,4 @@ dist/
 *.egg-info/
 
 # Local runtime outputs
-comparison_results/
+# comparison_results/

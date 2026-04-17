@@ -10,6 +10,13 @@ from config import EMOTION_LABELS, OPENAI_MODEL
 load_dotenv()
 
 client = OpenAI()
+
+
+def _openai_client(openai_api_key: str | None) -> OpenAI:
+    key = (openai_api_key or "").strip()
+    if key:
+        return OpenAI(api_key=key)
+    return client
 OPENAI_DEBUG_VERBOSE = os.getenv("OPENAI_DEBUG_VERBOSE", "0").strip().lower() in {"1", "true", "yes", "on"}
 
 # Approximate USD pricing per 1k tokens.
@@ -170,6 +177,7 @@ def check_sentiment_openai(
     *,
     return_metadata: bool = False,
     prompting_mode: str = "zero_shot",
+    openai_api_key: str | None = None,
 ):
     """Return the model output as a string."""
     lyrics = song["lyrics"]
@@ -190,6 +198,8 @@ def check_sentiment_openai(
     def _debug(msg: str) -> None:
         if OPENAI_DEBUG_VERBOSE:
             print(msg)
+
+    oa_client = _openai_client(openai_api_key)
 
     # Try JSON twice, with a stricter retry prompt on attempt 2.
     user_prompts = _build_user_prompts(lyrics, prompting_mode)
@@ -217,7 +227,7 @@ def check_sentiment_openai(
                 _debug("[OpenAI debug] Model likely lacks structured outputs support; using prompt-only JSON mode.")
 
             try:
-                response = client.chat.completions.create(**request_kwargs)
+                response = oa_client.chat.completions.create(**request_kwargs)
             except Exception as e:
                 err = str(e)
                 # Backward compatibility for models that expect `max_tokens`.
@@ -225,7 +235,7 @@ def check_sentiment_openai(
                     _debug("[OpenAI debug] Model does not support max_completion_tokens. Retrying with max_tokens.")
                     request_kwargs.pop("max_completion_tokens", None)
                     request_kwargs["max_tokens"] = 120
-                    response = client.chat.completions.create(**request_kwargs)
+                    response = oa_client.chat.completions.create(**request_kwargs)
                 else:
                     raise
 

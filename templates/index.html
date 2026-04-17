@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LyriSent — runs &amp; predict</title>
+  <style>
+    :root {
+      font-family: system-ui, sans-serif;
+      --bg: #0f1114;
+      --card: #1a1e24;
+      --border: #2a3140;
+      --text: #e8eaef;
+      --muted: #9aa3b2;
+      --accent: #6c9ef8;
+    }
+    body { margin: 0; background: var(--bg); color: var(--text); line-height: 1.5; }
+    main { max-width: 1040px; margin: 0 auto; padding: 1.5rem; }
+    h1 { font-size: 1.35rem; font-weight: 600; margin: 0 0 0.25rem; }
+    p.sub { color: var(--muted); margin: 0 0 1rem; font-size: 0.9rem; }
+    section { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; margin-bottom: 1.25rem; }
+    h2 { font-size: 1rem; margin: 0 0 1rem; font-weight: 600; }
+    label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.35rem; }
+    input[type="text"], input[type="password"], textarea {
+      width: 100%; box-sizing: border-box; padding: 0.5rem 0.65rem;
+      border-radius: 6px; border: 1px solid var(--border); background: #12151a; color: var(--text);
+    }
+    textarea { min-height: 100px; resize: vertical; font-family: inherit; }
+    textarea.mono { font-family: ui-monospace, monospace; font-size: 0.8rem; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
+    .chk { display: flex; align-items: center; gap: 0.5rem; margin: 0.75rem 0; }
+    .chk label { margin: 0; }
+    button {
+      background: var(--accent); color: #0a0c10; border: none; padding: 0.45rem 0.85rem;
+      border-radius: 6px; font-weight: 600; cursor: pointer; margin: 0.25rem 0.35rem 0.25rem 0;
+      font-size: 0.85rem;
+    }
+    button.secondary { background: #3d4555; color: var(--text); }
+    button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--border); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; margin-top: 0.5rem; }
+    .err { color: #f87171; font-size: 0.85rem; margin-top: 0.5rem; }
+    .ok { color: #86efac; font-size: 0.85rem; margin-top: 0.5rem; }
+    .warn { color: #fcd34d; font-size: 0.85rem; margin-top: 0.5rem; }
+    .bars { margin-top: 0.75rem; }
+    .bar-row { display: flex; align-items: center; gap: 0.5rem; margin: 0.2rem 0; font-size: 0.78rem; }
+    .bar-row span:first-child { width: 7rem; flex-shrink: 0; color: var(--muted); }
+    .bar-track { flex: 1; height: 7px; background: #252a33; border-radius: 4px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #6c9ef8, #a78bfa); }
+    .run-block { border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem; margin-bottom: 0.85rem; background: #12151a; }
+    .run-block h3 { margin: 0 0 0.5rem; font-size: 0.95rem; }
+    .thumb-strip { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0; }
+    .thumb-strip button { padding: 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: #1a1e24; cursor: pointer; }
+    .thumb-strip img { display: block; width: 120px; height: 72px; object-fit: cover; }
+    code { font-size: 0.8rem; background: #252a33; padding: 0.1rem 0.35rem; border-radius: 4px; }
+    .path-line { font-size: 0.75rem; color: var(--muted); word-break: break-all; margin: 0.35rem 0; }
+
+    .csv-wrap { margin-top: 0.75rem; max-height: 420px; overflow: auto; border: 1px solid var(--border); border-radius: 8px; }
+    table.data-table { border-collapse: collapse; font-size: 0.72rem; min-width: 100%; }
+    .data-table th, .data-table td { border: 1px solid var(--border); padding: 0.35rem 0.5rem; text-align: left; vertical-align: top; }
+    .data-table th { position: sticky; top: 0; background: #252a33; z-index: 1; white-space: nowrap; }
+    .data-table tr:nth-child(even) td { background: #151820; }
+    .data-table td { max-width: 14rem; word-break: break-word; }
+
+    .eval-summary-block { margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px solid var(--border); }
+    .eval-summary-block h4 { font-size: 0.88rem; font-weight: 600; margin: 0.65rem 0 0.35rem; color: var(--text); }
+    .toggle-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-top: 0.6rem; }
+    .toggle-content[hidden] { display: none; }
+    .small-btn { padding: 0.25rem 0.5rem; font-size: 0.75rem; }
+
+    .chart-card { border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; margin-top: 0.75rem; background: #12151a; }
+    .chart-card h4 { margin: 0 0 0.5rem; font-size: 0.88rem; color: var(--muted); }
+
+    /* Lightbox */
+    .lightbox { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.92); align-items: center; justify-content: center; flex-direction: column; }
+    .lightbox.open { display: flex; }
+    .lightbox img { max-width: min(96vw, 1400px); max-height: 82vh; object-fit: contain; border-radius: 4px; }
+    .lightbox-cap { color: var(--muted); font-size: 0.85rem; margin-top: 0.75rem; max-width: 90vw; text-align: center; }
+    .lightbox-nav { display: flex; gap: 1rem; margin-top: 1rem; align-items: center; }
+    .lightbox-close { position: absolute; top: 1rem; right: 1rem; background: #333; color: #fff; font-size: 1.25rem; line-height: 1; padding: 0.35rem 0.65rem; border-radius: 6px; cursor: pointer; border: none; }
+    .kbd { font-size: 0.7rem; opacity: 0.8; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>LyriSent</h1>
+    <p class="sub">CLI: <code>python app.py</code> · Viz: <code>python visualize_results.py</code> · Keys below override <code>.env</code> for this browser session (sent only with each request).</p>
+
+    <section>
+      <h2>API keys (optional)</h2>
+      <p class="sub">Stored in this browser only if you check &quot;Remember&quot;. Never logged on the server.</p>
+      <div class="row">
+        <div>
+          <label for="genius_token">Genius API token</label>
+          <input type="password" id="genius_token" autocomplete="off" placeholder="GENIUS_TOKEN" />
+        </div>
+        <div>
+          <label for="openai_key">OpenAI API key</label>
+          <input type="password" id="openai_key" autocomplete="off" placeholder="sk-…" />
+        </div>
+      </div>
+      <div class="chk">
+        <input type="checkbox" id="remember_keys" />
+        <label for="remember_keys">Remember keys in localStorage on this device</label>
+      </div>
+    </section>
+
+    <section>
+      <h2>Predict</h2>
+      <p class="sub">Paste lyrics <em>or</em> one artist + track <em>or</em> a batch list (one song per line). Batch formats: <code>Artist - Title</code>, <code>Artist — Title</code>, <code>Artist|Title</code>, or tab-separated.</p>
+
+      <label for="song_list">Batch: artist + title (one per line)</label>
+      <textarea id="song_list" class="mono" placeholder="Radiohead - Creep&#10;Bruno Mars | Treasure"></textarea>
+
+      <label for="lyrics" style="margin-top:0.75rem">Or paste lyrics (single song)</label>
+      <textarea id="lyrics" placeholder="Lyrics…"></textarea>
+
+      <div class="row" style="margin-top:0.75rem">
+        <div>
+          <label for="artist">Single: artist</label>
+          <input type="text" id="artist" placeholder="e.g. Radiohead" />
+        </div>
+        <div>
+          <label for="track">Single: track</label>
+          <input type="text" id="track" placeholder="e.g. Creep" />
+        </div>
+      </div>
+      <div class="chk">
+        <input type="checkbox" id="use_openai" />
+        <label for="use_openai">Include OpenAI (costs tokens; requires key above or env)</label>
+      </div>
+      <div class="btn-row">
+        <button type="button" id="btn-run">Run prediction</button>
+        <button type="button" id="btn-save" class="secondary">Run &amp; save to comparison_results</button>
+      </div>
+      <div id="msg"></div>
+      <div id="charts" class="bars"></div>
+    </section>
+
+    <section>
+      <h2>Evaluation runs (<code>testing.py</code>)</h2>
+      {% if eval_runs %}
+      {% for r in eval_runs %}
+      <div class="run-block" data-eval-run="{{ r.name }}">
+        <h3>{{ r.name }}</h3>
+        <p class="path-line" data-folder-path="{{ r.path }}">{{ r.path }}</p>
+        <div class="btn-row">
+          <button type="button" class="ghost btn-copy-path" data-path="{{ r.path }}">Copy folder path</button>
+          <button type="button" class="ghost btn-open-folder" data-run="{{ r.name }}">Open folder</button>
+          <button type="button" class="secondary btn-load-figures" data-run="{{ r.name }}">Load figures</button>
+        </div>
+        <div class="eval-summary-block" data-run="{{ r.name }}">
+          <p class="sub summary-status" style="font-size:0.8rem;margin:0">Loading method comparison &amp; runtime summaries…</p>
+          <div class="summary-content"></div>
+        </div>
+        <div class="thumb-strip figure-thumbs" data-run="{{ r.name }}" hidden></div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p class="sub">No evaluation folders yet.</p>
+      {% endif %}
+    </section>
+
+    <section>
+      <h2>Unseen song runs (CSV)</h2>
+      {% if unseen_runs %}
+      {% for r in unseen_runs %}
+      <div class="run-block">
+        <h3>{{ r.name }}</h3>
+        <p class="path-line">{{ r.path }}</p>
+        <div class="btn-row">
+          <button type="button" class="ghost btn-copy-path" data-path="{{ r.path }}">Copy folder path</button>
+          <button type="button" class="ghost btn-open-folder" data-run="{{ r.name }}">Open folder</button>
+          <button type="button" class="secondary csv-link" data-run="{{ r.name }}">Toggle table</button>
+        </div>
+      </div>
+      {% endfor %}
+      <div id="csv-panel" style="display:none;margin-top:1rem;">
+        <strong id="csv-title" style="font-size:0.9rem"></strong>
+        <div class="csv-wrap" id="csv-table-wrap"></div>
+      </div>
+      {% else %}
+      <p class="sub">No saved unseen runs yet.</p>
+      {% endif %}
+    </section>
+
+    <section>
+      <h2>Cross-run analysis</h2>
+      <p class="sub">Loads files from <code>comparison_results/cross_run_analysis</code>.</p>
+      <div class="btn-row">
+        <button type="button" class="secondary" id="btn-load-cross-run">Load cross-run analysis</button>
+      </div>
+      <div id="cross-run-msg" class="sub" style="font-size:0.82rem;margin-top:0.5rem"></div>
+      <div id="cross-run-content"></div>
+    </section>
+  </main>
+
+  <div id="lightbox" class="lightbox" aria-hidden="true">
+    <button type="button" class="lightbox-close" id="lb-close" aria-label="Close">×</button>
+    <img id="lb-img" src="" alt="" />
+    <div class="lightbox-cap" id="lb-cap"></div>
+    <div class="lightbox-nav">
+      <button type="button" class="secondary" id="lb-prev">← Previous</button>
+      <span class="kbd">← → Esc</span>
+      <button type="button" class="secondary" id="lb-next">Next →</button>
+    </div>
+  </div>
+
+  <script>
+    const EMOTIONS = {{ emotion_labels | tojson }};
+    const LS_OPENAI = 'lyrisent_openai_key';
+    const LS_GENIUS = 'lyrisent_genius_token';
+    const LS_REMEMBER = 'lyrisent_remember_keys';
+
+    (function initKeys() {
+      const remember = localStorage.getItem(LS_REMEMBER) === '1';
+      document.getElementById('remember_keys').checked = remember;
+      if (remember) {
+        document.getElementById('openai_key').value = localStorage.getItem(LS_OPENAI) || '';
+        document.getElementById('genius_token').value = localStorage.getItem(LS_GENIUS) || '';
+      }
+    })();
+
+    function persistKeys() {
+      const remember = document.getElementById('remember_keys').checked;
+      localStorage.setItem(LS_REMEMBER, remember ? '1' : '0');
+      if (remember) {
+        localStorage.setItem(LS_OPENAI, document.getElementById('openai_key').value);
+        localStorage.setItem(LS_GENIUS, document.getElementById('genius_token').value);
+      } else {
+        localStorage.removeItem(LS_OPENAI);
+        localStorage.removeItem(LS_GENIUS);
+      }
+    }
+    document.getElementById('remember_keys').addEventListener('change', persistKeys);
+    document.getElementById('openai_key').addEventListener('blur', persistKeys);
+    document.getElementById('genius_token').addEventListener('blur', persistKeys);
+
+    function keysPayload() {
+      return {
+        openai_api_key: document.getElementById('openai_key').value.trim() || undefined,
+        genius_token: document.getElementById('genius_token').value.trim() || undefined,
+      };
+    }
+
+    function renderBars(label, scores) {
+      const wrap = document.createElement('div');
+      const h = document.createElement('h3');
+      h.style.cssText = 'font-size:0.85rem;margin:0.5rem 0 0.35rem';
+      h.textContent = label;
+      wrap.appendChild(h);
+      const container = document.createElement('div');
+      EMOTIONS.forEach((emo) => {
+        const v = scores[emo];
+        const num = v == null ? null : Number(v);
+        const pct = num == null || Number.isNaN(num) ? 0 : Math.min(100, num * 100);
+        const row = document.createElement('div');
+        row.className = 'bar-row';
+        row.innerHTML = '<span>' + emo + '</span><div class="bar-track"><div class="bar-fill" style="width:' + pct + '%"></div></div><span>' + (num == null ? '—' : num.toFixed(2)) + '</span>';
+        container.appendChild(row);
+      });
+      wrap.appendChild(container);
+      return wrap;
+    }
+
+    function showCharts(charts) {
+      const el = document.getElementById('charts');
+      el.innerHTML = '';
+      (charts || []).forEach((chart, i) => {
+        const card = document.createElement('div');
+        card.className = 'chart-card';
+        const m = chart.meta || {};
+        const h = document.createElement('h4');
+        h.textContent = (m.artist || '') + ' — ' + (m.song || ('Song ' + (i + 1)));
+        card.appendChild(h);
+        card.appendChild(renderBars('Naive Bayes', chart.nb));
+        card.appendChild(renderBars('BERT', chart.bert));
+        Object.keys(chart.openai_by_mode || {}).forEach((mode) => {
+          card.appendChild(renderBars('OpenAI (' + mode + ')', chart.openai_by_mode[mode]));
+        });
+        el.appendChild(card);
+      });
+    }
+
+    async function doPredict(save) {
+      persistKeys();
+      const msg = document.getElementById('msg');
+      const btnRun = document.getElementById('btn-run');
+      const btnSave = document.getElementById('btn-save');
+      msg.innerHTML = '';
+      btnRun.disabled = btnSave.disabled = true;
+      try {
+        const body = {
+          ...keysPayload(),
+          lyrics: document.getElementById('lyrics').value,
+          artist: document.getElementById('artist').value,
+          track: document.getElementById('track').value,
+          song_list: document.getElementById('song_list').value,
+          use_openai: document.getElementById('use_openai').checked,
+        };
+        const url = save ? '/api/predict_save' : '/api/predict';
+        const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const data = await res.json();
+        if (!res.ok) {
+          let html = '<div class="err">' + (data.error || res.status) + '</div>';
+          if (data.issues && data.issues.length) {
+            html += '<ul class="warn" style="margin:0.5rem 0 0 1rem;font-size:0.8rem">';
+            data.issues.forEach((x) => { html += '<li>' + (x.artist || '') + ' — ' + (x.track || '') + ': ' + (x.reason || '') + '</li>'; });
+            html += '</ul>';
+          }
+          msg.innerHTML = html;
+          if (data.charts && data.charts.length) showCharts(data.charts);
+          return;
+        }
+        showCharts(data.charts);
+        let note = '';
+        if (data.issues && data.issues.length) {
+          note += '<div class="warn">Some lines skipped: ' + data.issues.length + '</div><ul style="margin:0.25rem 0 0 1rem;font-size:0.8rem;color:#fcd34d">';
+          data.issues.forEach((x) => { note += '<li>' + (x.artist || '') + ' — ' + (x.track || '') + ': ' + (x.reason || '') + '</li>'; });
+          note += '</ul>';
+        }
+        if (data.saved_to) {
+          note += '<div class="ok">Saved to <code>' + data.saved_to + '</code></div>';
+        }
+        msg.innerHTML = note;
+      } catch (e) {
+        msg.innerHTML = '<div class="err">' + e.message + '</div>';
+      } finally {
+        btnRun.disabled = btnSave.disabled = false;
+      }
+    }
+
+    document.getElementById('btn-run').addEventListener('click', () => doPredict(false));
+    document.getElementById('btn-save').addEventListener('click', () => doPredict(true));
+
+    document.querySelectorAll('.btn-copy-path').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const p = btn.getAttribute('data-path');
+        try {
+          await navigator.clipboard.writeText(p);
+          btn.textContent = 'Copied!';
+          setTimeout(() => { btn.textContent = 'Copy folder path'; }, 1500);
+        } catch {
+          prompt('Copy path:', p);
+        }
+      });
+    });
+
+    document.querySelectorAll('.btn-open-folder').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const run = btn.getAttribute('data-run');
+        const res = await fetch('/api/open-folder', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ run_name: run }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          alert(data.error || 'Could not open folder. Use Copy path (localhost only for Open).');
+        }
+      });
+    });
+
+    let lbUrls = [];
+    let lbIndex = 0;
+    const lbEl = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lb-img');
+    const lbCap = document.getElementById('lb-cap');
+
+    function lbShow(i) {
+      if (!lbUrls.length) return;
+      lbIndex = (i + lbUrls.length) % lbUrls.length;
+      const item = lbUrls[lbIndex];
+      lbImg.src = item.url;
+      lbCap.textContent = item.name + ' (' + (lbIndex + 1) + '/' + lbUrls.length + ')';
+      lbEl.classList.add('open');
+      lbEl.setAttribute('aria-hidden', 'false');
+    }
+    function lbClose() {
+      lbEl.classList.remove('open');
+      lbEl.setAttribute('aria-hidden', 'true');
+      lbImg.src = '';
+    }
+    document.getElementById('lb-close').addEventListener('click', lbClose);
+    document.getElementById('lb-prev').addEventListener('click', () => lbShow(lbIndex - 1));
+    document.getElementById('lb-next').addEventListener('click', () => lbShow(lbIndex + 1));
+    lbEl.addEventListener('click', (e) => { if (e.target === lbEl) lbClose(); });
+    document.addEventListener('keydown', (e) => {
+      if (!lbEl.classList.contains('open')) return;
+      if (e.key === 'Escape') lbClose();
+      if (e.key === 'ArrowLeft') lbShow(lbIndex - 1);
+      if (e.key === 'ArrowRight') lbShow(lbIndex + 1);
+    });
+
+    document.querySelectorAll('.btn-load-figures').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const run = btn.getAttribute('data-run');
+        const block = btn.closest('.run-block');
+        const strip = block ? block.querySelector('.figure-thumbs') : null;
+        if (!strip) return;
+        strip.innerHTML = 'Loading…';
+        strip.hidden = false;
+        let res = await fetch('/api/eval_run/' + encodeURIComponent(run) + '/figures');
+        if (res.status === 404) {
+          res = await fetch('/api/eval_figures?run=' + encodeURIComponent(run));
+        }
+        const data = await res.json();
+        strip.innerHTML = '';
+        if (!res.ok || !data.files || !data.files.length) {
+          strip.innerHTML = '<span style="color:var(--muted);font-size:0.85rem">No PNG figures. Run <code>python visualize_results.py --run-dir ' + run + '</code></span>';
+          return;
+        }
+        const files = data.files.slice();
+        files.forEach((f, idx) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.title = f.name;
+          const im = document.createElement('img');
+          im.src = f.url;
+          im.alt = f.name;
+          im.loading = 'lazy';
+          b.appendChild(im);
+          b.addEventListener('click', () => { lbUrls = files; lbShow(idx); });
+          strip.appendChild(b);
+        });
+      });
+    });
+
+    function renderCsvTable(headers, rows, targetEl) {
+      const wrap = targetEl || document.getElementById('csv-table-wrap');
+      if (!wrap) return;
+      let html = '<table class="data-table"><thead><tr>';
+      (headers || []).forEach((h) => { html += '<th>' + String(h).replace(/</g, '&lt;') + '</th>'; });
+      html += '</tr></thead><tbody>';
+      (rows || []).forEach((row) => {
+        html += '<tr>';
+        (row || []).forEach((cell) => {
+          const t = cell == null ? '' : String(cell);
+          html += '<td>' + t.replace(/</g, '&lt;') + '</td>';
+        });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      wrap.innerHTML = html;
+    }
+
+    function createToggleTable(title, headers, rows, startOpen = false) {
+      const box = document.createElement('div');
+      const head = document.createElement('div');
+      head.className = 'toggle-head';
+      const h4 = document.createElement('h4');
+      h4.textContent = title;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'ghost small-btn';
+      btn.textContent = startOpen ? 'Hide' : 'Show';
+      head.appendChild(h4);
+      head.appendChild(btn);
+      box.appendChild(head);
+
+      const content = document.createElement('div');
+      content.className = 'csv-wrap toggle-content';
+      content.style.maxHeight = '280px';
+      if (!startOpen) content.hidden = true;
+      box.appendChild(content);
+      renderCsvTable(headers, rows, content);
+
+      btn.addEventListener('click', () => {
+        content.hidden = !content.hidden;
+        btn.textContent = content.hidden ? 'Show' : 'Hide';
+      });
+      return box;
+    }
+
+    async function loadEvalSummaries() {
+      const blocks = document.querySelectorAll('.eval-summary-block');
+      for (const block of blocks) {
+        const run = block.getAttribute('data-run');
+        const status = block.querySelector('.summary-status');
+        const content = block.querySelector('.summary-content');
+        try {
+          let res = await fetch('/api/eval_run/' + encodeURIComponent(run) + '/summary');
+          if (res.status === 404) {
+            res = await fetch('/api/eval_summary?run=' + encodeURIComponent(run));
+          }
+          const data = await res.json();
+          if (!res.ok) {
+            if (status) status.textContent = data.error || 'Could not load summaries.';
+            continue;
+          }
+          if (status) status.style.display = 'none';
+          content.innerHTML = '';
+          let any = false;
+          const mc = data.methods_comparison;
+          if (mc && mc.headers && mc.headers.length && mc.rows) {
+            any = true;
+            content.appendChild(createToggleTable('Methods comparison (summary)', mc.headers, mc.rows, false));
+          }
+          const rt = data.runtime_cost;
+          if (rt && rt.headers && rt.headers.length && rt.rows) {
+            any = true;
+            content.appendChild(createToggleTable('Runtime & token cost', rt.headers, rt.rows, false));
+          }
+          if (!any) {
+            if (status) {
+              status.style.display = '';
+              status.textContent = 'No methods_comparison_summary.csv or runtime_cost_summary.csv in this folder.';
+            }
+          }
+        } catch (e) {
+          if (status) status.textContent = 'Failed to load summaries: ' + e.message;
+        }
+      }
+    }
+    loadEvalSummaries();
+
+    let activeCsvRun = null;
+    document.querySelectorAll('.csv-link').forEach((a) => {
+      a.addEventListener('click', async () => {
+        const run = a.getAttribute('data-run');
+        const panel = document.getElementById('csv-panel');
+        const title = document.getElementById('csv-title');
+        if (panel.style.display !== 'none' && activeCsvRun === run) {
+          panel.style.display = 'none';
+          activeCsvRun = null;
+          return;
+        }
+        panel.style.display = 'block';
+        activeCsvRun = run;
+        title.textContent = run;
+        document.getElementById('csv-table-wrap').innerHTML = 'Loading…';
+        const res = await fetch('/api/unseen_csv/' + encodeURIComponent(run));
+        const data = await res.json();
+        if (!res.ok) {
+          document.getElementById('csv-table-wrap').innerHTML = '<p class="err">' + (data.error || 'Error') + '</p>';
+          return;
+        }
+        renderCsvTable(data.headers || [], data.rows || []);
+        title.textContent = run + ' — ' + (data.path || '');
+      });
+    });
+
+    document.getElementById('btn-load-cross-run').addEventListener('click', async () => {
+      const msg = document.getElementById('cross-run-msg');
+      const root = document.getElementById('cross-run-content');
+      msg.textContent = 'Loading…';
+      root.innerHTML = '';
+      try {
+        const res = await fetch('/api/cross_run');
+        const data = await res.json();
+        if (!res.ok) {
+          msg.textContent = data.error || 'Could not load cross-run analysis.';
+          return;
+        }
+        msg.textContent = data.path || '';
+
+        const tables = data.tables || [];
+        tables.forEach((t) => {
+          root.appendChild(createToggleTable(t.name, t.headers || [], t.rows || [], false));
+        });
+
+        const images = data.images || [];
+        if (images.length) {
+          const wrap = document.createElement('div');
+          wrap.className = 'thumb-strip';
+          const h4 = document.createElement('h4');
+          h4.textContent = 'Cross-run figures';
+          root.appendChild(h4);
+          root.appendChild(wrap);
+          images.forEach((f, idx) => {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.title = f.name;
+            const im = document.createElement('img');
+            im.src = f.url;
+            im.alt = f.name;
+            im.loading = 'lazy';
+            b.appendChild(im);
+            b.addEventListener('click', () => { lbUrls = images; lbShow(idx); });
+            wrap.appendChild(b);
+          });
+        }
+        if (!tables.length && !images.length) {
+          msg.textContent = 'No cross-run files found.';
+        }
+      } catch (e) {
+        msg.textContent = 'Failed to load cross-run analysis: ' + e.message;
+      }
+    });
+  </script>
+</body>
+</html>

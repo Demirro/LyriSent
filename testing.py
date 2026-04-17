@@ -39,14 +39,10 @@ def _slugify(value: str) -> str:
 
 
 def _truth_emotions_from_df(df_truth: pd.DataFrame) -> list[str]:
-    truth_cols_lower = {c.lower(): c for c in df_truth.columns}
     available = {c.lower() for c in df_truth.columns}
-    # Keep config order and only use available truth columns.
     ordered = [e for e in EMOTION_LABELS if e.lower() in available]
-    # Keep canonical names from config.
     return ordered
 
-# Load data
 df_rada = pd.read_csv(RADA_ANNOTATION_CSV)
 df_predefined = pd.read_csv(SENTIMENT_COMPARISON_CSV)
 
@@ -57,7 +53,7 @@ print(df_rada.head())
 print("\nColumns in df_rada:")
 print(df_rada.columns.tolist())
 
-# Result containers
+# Result
 nb_results = {}
 bert_results = {}
 openai_results = {}
@@ -119,7 +115,7 @@ def test_methods_on_rada(df):
             nb_predictions = predict_emotions(preprocessed_lyrics)
             method_timers["NB"] += time.perf_counter() - t0
             nb_results[song_name] = nb_predictions
-            # Write NB outputs
+
             for emotion in eval_emotions:
                 song_results[f'NB_{emotion}'] = nb_predictions.get(emotion, np.nan)
         except Exception as e:
@@ -135,7 +131,7 @@ def test_methods_on_rada(df):
                 bert_predictions = predict_emotions_bert(lyrics_for_models)
                 method_timers["BERT"] += time.perf_counter() - t0
                 bert_results[song_name] = bert_predictions
-                # Write BERT outputs
+
                 for emotion in eval_emotions:
                     song_results[f'BERT_{emotion}'] = bert_predictions.get(emotion, np.nan)
             except Exception as e:
@@ -219,7 +215,6 @@ def test_methods_on_rada(df):
                     })
                     mode_usage["parse_fail_count"] += 1
 
-                # Write OpenAI outputs
                 for emotion in eval_emotions:
                     song_results[f'{mode_col_prefix}_{emotion}'] = openai_predictions.get(emotion, np.nan)
 
@@ -248,7 +243,7 @@ def parse_openai_output(openai_output, song_name):
         print(f"No OpenAI output for {song_name}")
         return {emotion: np.nan for emotion in eval_emotions}
 
-    # Handle responses wrapped as a quoted CSV blob.
+    # Handle responses wrapped as a quoted CSV blob (happened in old models when not in structured output mode).
     normalized_output = openai_output.strip()
     if (
         len(normalized_output) >= 2
@@ -309,7 +304,6 @@ def parse_openai_output(openai_output, song_name):
     try:
         rows = list(csv.reader(io.StringIO(normalized_output)))
         if rows:
-            # Use the first row with enough fields and binary tail.
             for row in rows:
                 if len(row) < len(EMOTION_LABELS):
                     continue
@@ -324,7 +318,6 @@ def parse_openai_output(openai_output, song_name):
     gpt_emotions_order = EMOTION_LABELS
     expected_gpt_cols = 3 + len(gpt_emotions_order)
 
-    # Find the data line
     raw_lines = normalized_output.splitlines()
     data_line_string = None
 
@@ -333,19 +326,15 @@ def parse_openai_output(openai_output, song_name):
         if not stripped_line:
             continue
 
-        # Skip header lines
         if any(keyword in stripped_line for keyword in ["Song Name", "Artists", "Lyrics", "Joy,Trust"]):
             continue
 
-        # Parse line as CSV
         try:
             string_io_line = io.StringIO(stripped_line)
             reader_line = csv.reader(string_io_line)
             parsed_row = next(reader_line)
 
-            # Check if this looks like data
             if len(parsed_row) >= expected_gpt_cols - 2:
-                # Emotion fields should be 0/1 values.
                 emotion_values = parsed_row[3:3 + len(gpt_emotions_order)]
                 if all(val.strip() in ['0', '1', ''] for val in emotion_values):
                     data_line_string = stripped_line
@@ -359,7 +348,6 @@ def parse_openai_output(openai_output, song_name):
             reader = csv.reader(string_io)
             gpt_sentiment_list_raw = next(reader)
 
-            # Extract emotion values
             for i, emotion in enumerate(gpt_emotions_order):
                 if 3 + i < len(gpt_sentiment_list_raw):
                     value_str = gpt_sentiment_list_raw[3 + i].strip().strip('"\'')
@@ -435,10 +423,6 @@ def _optimal_threshold(y_true: np.ndarray, y_prob: np.ndarray) -> float:
 
 
 def tune_thresholds(results_df: pd.DataFrame, method_prefix: str, emotion_labels: list[str]):
-    """
-    Tune per-emotion thresholds on a holdout split of the Rada dataset.
-    Note: this is for more rigorous reporting than a fixed 0.5 threshold.
-    """
     thresholds = {}
     for emotion in emotion_labels:
         pred_col = f"{method_prefix}_{emotion}"
@@ -459,7 +443,6 @@ def tune_thresholds(results_df: pd.DataFrame, method_prefix: str, emotion_labels
 
 
 def evaluate_performance(results_df, method_prefix, emotion_labels, *, thresholds: Optional[dict] = None):
-    """Evaluate performance of a method against ground truth."""
     all_metrics = {}
 
     for emotion in emotion_labels:
@@ -490,7 +473,6 @@ def evaluate_performance(results_df, method_prefix, emotion_labels, *, threshold
         truth_binary = truth.astype(int)
 
         try:
-            # Compute metrics
             accuracy = accuracy_score(truth_binary, pred_binary)
             report = classification_report(truth_binary, pred_binary, output_dict=True, zero_division=0)
             conf_matrix = confusion_matrix(truth_binary, pred_binary)
@@ -527,7 +509,6 @@ def evaluate_performance(results_df, method_prefix, emotion_labels, *, threshold
     return all_metrics
 
 
-# Evaluate each method
 print("\n" + "=" * 50)
 print("PERFORMANCE EVALUATION")
 print("=" * 50)
