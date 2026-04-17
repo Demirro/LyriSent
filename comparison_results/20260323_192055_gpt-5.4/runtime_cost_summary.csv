@@ -1,0 +1,5 @@
+method,elapsed_sec,n_samples,method_variant,method_display,model,prompting_mode,structured_output_requested,structured_output_supported,json_success_count,parse_fail_count,json_success_rate,parse_fail_rate,avg_attempts,prompt_tokens,completion_tokens,total_tokens,estimated_cost_usd
+NaiveBayes,0.2989449000451714,100,,,,,,,,,,,,,,,
+BERT,16.2158001998323,100,,,,,,,,,,,,,,,
+OpenAI,151.3391642002971,100,OpenAI_zero_shot,"OpenAI (gpt-5.4, zero_shot)",gpt-5.4,zero_shot,True,True,100.0,0.0,1.0,0.0,1.0,60114.0,4900.0,65014.0,0.223785
+OpenAI,137.78595839999616,100,OpenAI_few_shot,"OpenAI (gpt-5.4, few_shot)",gpt-5.4,few_shot,True,True,100.0,0.0,1.0,0.0,1.0,80514.0,4900.0,85414.0,0.274785

@@ -1,0 +1,321 @@
+Method,Emotion,Score,Song
+BERT,Joy,0.79,This is America - Childish Gambino
+NB,Joy,1.0,This is America - Childish Gambino
+OpenAI_few_shot,Joy,1.0,This is America - Childish Gambino
+OpenAI_zero_shot,Joy,1.0,This is America - Childish Gambino
+BERT,Trust,0.65,This is America - Childish Gambino
+NB,Trust,1.0,This is America - Childish Gambino
+OpenAI_few_shot,Trust,0.0,This is America - Childish Gambino
+OpenAI_zero_shot,Trust,0.0,This is America - Childish Gambino
+BERT,Fear,0.16,This is America - Childish Gambino
+NB,Fear,0.0,This is America - Childish Gambino
+OpenAI_few_shot,Fear,1.0,This is America - Childish Gambino
+OpenAI_zero_shot,Fear,1.0,This is America - Childish Gambino
+BERT,Surprise,0.11,This is America - Childish Gambino
+NB,Surprise,0.0,This is America - Childish Gambino
+OpenAI_few_shot,Surprise,0.0,This is America - Childish Gambino
+OpenAI_zero_shot,Surprise,0.0,This is America - Childish Gambino
+BERT,Sadness,0.16,This is America - Childish Gambino
+NB,Sadness,0.0,This is America - Childish Gambino
+OpenAI_few_shot,Sadness,1.0,This is America - Childish Gambino
+OpenAI_zero_shot,Sadness,1.0,This is America - Childish Gambino
+BERT,Disgust,0.42,This is America - Childish Gambino
+NB,Disgust,1.0,This is America - Childish Gambino
+OpenAI_few_shot,Disgust,0.0,This is America - Childish Gambino
+OpenAI_zero_shot,Disgust,0.0,This is America - Childish Gambino
+BERT,Anger,0.44,This is America - Childish Gambino
+NB,Anger,0.0,This is America - Childish Gambino
+OpenAI_few_shot,Anger,1.0,This is America - Childish Gambino
+OpenAI_zero_shot,Anger,1.0,This is America - Childish Gambino
+BERT,Anticipation,0.54,This is America - Childish Gambino
+NB,Anticipation,0.0,This is America - Childish Gambino
+OpenAI_few_shot,Anticipation,1.0,This is America - Childish Gambino
+OpenAI_zero_shot,Anticipation,1.0,This is America - Childish Gambino
+BERT,Joy,0.18,deepfacke - brakence
+NB,Joy,0.0,deepfacke - brakence
+OpenAI_few_shot,Joy,0.0,deepfacke - brakence
+OpenAI_zero_shot,Joy,0.0,deepfacke - brakence
+BERT,Trust,0.27,deepfacke - brakence
+NB,Trust,0.0,deepfacke - brakence
+OpenAI_few_shot,Trust,0.0,deepfacke - brakence
+OpenAI_zero_shot,Trust,0.0,deepfacke - brakence
+BERT,Fear,0.8,deepfacke - brakence
+NB,Fear,0.0,deepfacke - brakence
+OpenAI_few_shot,Fear,1.0,deepfacke - brakence
+OpenAI_zero_shot,Fear,1.0,deepfacke - brakence
+BERT,Surprise,0.45,deepfacke - brakence
+NB,Surprise,0.0,deepfacke - brakence
+OpenAI_few_shot,Surprise,0.0,deepfacke - brakence
+OpenAI_zero_shot,Surprise,0.0,deepfacke - brakence
+BERT,Sadness,0.77,deepfacke - brakence
+NB,Sadness,0.0,deepfacke - brakence
+OpenAI_few_shot,Sadness,1.0,deepfacke - brakence
+OpenAI_zero_shot,Sadness,1.0,deepfacke - brakence
+BERT,Disgust,0.85,deepfacke - brakence
+NB,Disgust,0.0,deepfacke - brakence
+OpenAI_few_shot,Disgust,1.0,deepfacke - brakence
+OpenAI_zero_shot,Disgust,1.0,deepfacke - brakence
+BERT,Anger,0.65,deepfacke - brakence
+NB,Anger,0.0,deepfacke - brakence
+OpenAI_few_shot,Anger,1.0,deepfacke - brakence
+OpenAI_zero_shot,Anger,1.0,deepfacke - brakence
+BERT,Anticipation,0.24,deepfacke - brakence
+NB,Anticipation,0.0,deepfacke - brakence
+OpenAI_few_shot,Anticipation,1.0,deepfacke - brakence
+OpenAI_zero_shot,Anticipation,1.0,deepfacke - brakence
+BERT,Joy,0.47,Haus am See - Peter Fox
+NB,Joy,1.0,Haus am See - Peter Fox
+OpenAI_few_shot,Joy,1.0,Haus am See - Peter Fox
+OpenAI_zero_shot,Joy,1.0,Haus am See - Peter Fox
+BERT,Trust,0.47,Haus am See - Peter Fox
+NB,Trust,1.0,Haus am See - Peter Fox
+OpenAI_few_shot,Trust,1.0,Haus am See - Peter Fox
+OpenAI_zero_shot,Trust,1.0,Haus am See - Peter Fox
+BERT,Fear,0.34,Haus am See - Peter Fox
+NB,Fear,0.99,Haus am See - Peter Fox
+OpenAI_few_shot,Fear,0.0,Haus am See - Peter Fox
+OpenAI_zero_shot,Fear,0.0,Haus am See - Peter Fox
+BERT,Surprise,0.24,Haus am See - Peter Fox
+NB,Surprise,0.0,Haus am See - Peter Fox
+OpenAI_few_shot,Surprise,0.0,Haus am See - Peter Fox
+OpenAI_zero_shot,Surprise,0.0,Haus am See - Peter Fox
+BERT,Sadness,0.43,Haus am See - Peter Fox
+NB,Sadness,0.13,Haus am See - Peter Fox
+OpenAI_few_shot,Sadness,0.0,Haus am See - Peter Fox
+OpenAI_zero_shot,Sadness,0.0,Haus am See - Peter Fox
+BERT,Disgust,0.56,Haus am See - Peter Fox
+NB,Disgust,1.0,Haus am See - Peter Fox
+OpenAI_few_shot,Disgust,0.0,Haus am See - Peter Fox
+OpenAI_zero_shot,Disgust,0.0,Haus am See - Peter Fox
+BERT,Anger,0.35,Haus am See - Peter Fox
+NB,Anger,1.0,Haus am See - Peter Fox
+OpenAI_few_shot,Anger,0.0,Haus am See - Peter Fox
+OpenAI_zero_shot,Anger,0.0,Haus am See - Peter Fox
+BERT,Anticipation,0.45,Haus am See - Peter Fox
+NB,Anticipation,0.42,Haus am See - Peter Fox
+OpenAI_few_shot,Anticipation,1.0,Haus am See - Peter Fox
+OpenAI_zero_shot,Anticipation,1.0,Haus am See - Peter Fox
+BERT,Joy,0.53,J'ai tout mon temps - Feu! Chatterton
+NB,Joy,1.0,J'ai tout mon temps - Feu! Chatterton
+OpenAI_few_shot,Joy,1.0,J'ai tout mon temps - Feu! Chatterton
+OpenAI_zero_shot,Joy,1.0,J'ai tout mon temps - Feu! Chatterton
+BERT,Trust,0.44,J'ai tout mon temps - Feu! Chatterton
+NB,Trust,0.0,J'ai tout mon temps - Feu! Chatterton
+OpenAI_few_shot,Trust,1.0,J'ai tout mon temps - Feu! Chatterton
+OpenAI_zero_shot,Trust,1.0,J'ai tout mon temps - Feu! Chatterton
+BERT,Fear,0.4,J'ai tout mon temps - Feu! Chatterton
+NB,Fear,1.0,J'ai tout mon temps - Feu! Chatterton
+OpenAI_few_shot,Fear,0.0,J'ai tout mon temps - Feu! Chatterton
+OpenAI_zero_shot,Fear,0.0,J'ai tout mon temps - Feu! Chatterton
+BERT,Surprise,0.24,J'ai tout mon temps - Feu! Chatterton
+NB,Surprise,1.0,J'ai tout mon temps - Feu! Chatterton
+OpenAI_few_shot,Surprise,0.0,J'ai tout mon temps - Feu! Chatterton
+OpenAI_zero_shot,Surprise,0.0,J'ai tout mon temps - Feu! Chatterton
+BERT,Sadness,0.45,J'ai tout mon temps - Feu! Chatterton
+NB,Sadness,1.0,J'ai tout mon temps - Feu! Chatterton
+OpenAI_few_shot,Sadness,0.0,J'ai tout mon temps - Feu! Chatterton
+OpenAI_zero_shot,Sadness,0.0,J'ai tout mon temps - Feu! Chatterton
+BERT,Disgust,0.32,J'ai tout mon temps - Feu! Chatterton
+NB,Disgust,1.0,J'ai tout mon temps - Feu! Chatterton
+OpenAI_few_shot,Disgust,0.0,J'ai tout mon temps - Feu! Chatterton
+OpenAI_zero_shot,Disgust,0.0,J'ai tout mon temps - Feu! Chatterton
+BERT,Anger,0.15,J'ai tout mon temps - Feu! Chatterton
+NB,Anger,1.0,J'ai tout mon temps - Feu! Chatterton
+OpenAI_few_shot,Anger,0.0,J'ai tout mon temps - Feu! Chatterton
+OpenAI_zero_shot,Anger,0.0,J'ai tout mon temps - Feu! Chatterton
+BERT,Anticipation,0.55,J'ai tout mon temps - Feu! Chatterton
+NB,Anticipation,1.0,J'ai tout mon temps - Feu! Chatterton
+OpenAI_few_shot,Anticipation,1.0,J'ai tout mon temps - Feu! Chatterton
+OpenAI_zero_shot,Anticipation,1.0,J'ai tout mon temps - Feu! Chatterton
+BERT,Joy,0.8,Treasure - Bruno Mars
+NB,Joy,0.0,Treasure - Bruno Mars
+OpenAI_few_shot,Joy,1.0,Treasure - Bruno Mars
+OpenAI_zero_shot,Joy,1.0,Treasure - Bruno Mars
+BERT,Trust,0.71,Treasure - Bruno Mars
+NB,Trust,0.93,Treasure - Bruno Mars
+OpenAI_few_shot,Trust,1.0,Treasure - Bruno Mars
+OpenAI_zero_shot,Trust,1.0,Treasure - Bruno Mars
+BERT,Fear,0.19,Treasure - Bruno Mars
+NB,Fear,0.0,Treasure - Bruno Mars
+OpenAI_few_shot,Fear,0.0,Treasure - Bruno Mars
+OpenAI_zero_shot,Fear,0.0,Treasure - Bruno Mars
+BERT,Surprise,0.27,Treasure - Bruno Mars
+NB,Surprise,0.0,Treasure - Bruno Mars
+OpenAI_few_shot,Surprise,0.0,Treasure - Bruno Mars
+OpenAI_zero_shot,Surprise,0.0,Treasure - Bruno Mars
+BERT,Sadness,0.21,Treasure - Bruno Mars
+NB,Sadness,0.0,Treasure - Bruno Mars
+OpenAI_few_shot,Sadness,0.0,Treasure - Bruno Mars
+OpenAI_zero_shot,Sadness,1.0,Treasure - Bruno Mars
+BERT,Disgust,0.09,Treasure - Bruno Mars
+NB,Disgust,0.0,Treasure - Bruno Mars
+OpenAI_few_shot,Disgust,0.0,Treasure - Bruno Mars
+OpenAI_zero_shot,Disgust,0.0,Treasure - Bruno Mars
+BERT,Anger,0.14,Treasure - Bruno Mars
+NB,Anger,0.0,Treasure - Bruno Mars
+OpenAI_few_shot,Anger,0.0,Treasure - Bruno Mars
+OpenAI_zero_shot,Anger,0.0,Treasure - Bruno Mars
+BERT,Anticipation,0.66,Treasure - Bruno Mars
+NB,Anticipation,0.95,Treasure - Bruno Mars
+OpenAI_few_shot,Anticipation,1.0,Treasure - Bruno Mars
+OpenAI_zero_shot,Anticipation,1.0,Treasure - Bruno Mars
+BERT,Joy,0.76,Shape Of You - Ed Sheeran
+NB,Joy,0.0,Shape Of You - Ed Sheeran
+OpenAI_few_shot,Joy,1.0,Shape Of You - Ed Sheeran
+OpenAI_zero_shot,Joy,1.0,Shape Of You - Ed Sheeran
+BERT,Trust,0.7,Shape Of You - Ed Sheeran
+NB,Trust,1.0,Shape Of You - Ed Sheeran
+OpenAI_few_shot,Trust,1.0,Shape Of You - Ed Sheeran
+OpenAI_zero_shot,Trust,1.0,Shape Of You - Ed Sheeran
+BERT,Fear,0.21,Shape Of You - Ed Sheeran
+NB,Fear,0.0,Shape Of You - Ed Sheeran
+OpenAI_few_shot,Fear,0.0,Shape Of You - Ed Sheeran
+OpenAI_zero_shot,Fear,0.0,Shape Of You - Ed Sheeran
+BERT,Surprise,0.34,Shape Of You - Ed Sheeran
+NB,Surprise,0.0,Shape Of You - Ed Sheeran
+OpenAI_few_shot,Surprise,0.0,Shape Of You - Ed Sheeran
+OpenAI_zero_shot,Surprise,0.0,Shape Of You - Ed Sheeran
+BERT,Sadness,0.27,Shape Of You - Ed Sheeran
+NB,Sadness,0.0,Shape Of You - Ed Sheeran
+OpenAI_few_shot,Sadness,0.0,Shape Of You - Ed Sheeran
+OpenAI_zero_shot,Sadness,0.0,Shape Of You - Ed Sheeran
+BERT,Disgust,0.06,Shape Of You - Ed Sheeran
+NB,Disgust,0.0,Shape Of You - Ed Sheeran
+OpenAI_few_shot,Disgust,0.0,Shape Of You - Ed Sheeran
+OpenAI_zero_shot,Disgust,0.0,Shape Of You - Ed Sheeran
+BERT,Anger,0.1,Shape Of You - Ed Sheeran
+NB,Anger,0.0,Shape Of You - Ed Sheeran
+OpenAI_few_shot,Anger,0.0,Shape Of You - Ed Sheeran
+OpenAI_zero_shot,Anger,0.0,Shape Of You - Ed Sheeran
+BERT,Anticipation,0.68,Shape Of You - Ed Sheeran
+NB,Anticipation,0.02,Shape Of You - Ed Sheeran
+OpenAI_few_shot,Anticipation,1.0,Shape Of You - Ed Sheeran
+OpenAI_zero_shot,Anticipation,1.0,Shape Of You - Ed Sheeran
+BERT,Joy,0.19,Saw You In A Dream - The Japanese House
+NB,Joy,0.0,Saw You In A Dream - The Japanese House
+OpenAI_few_shot,Joy,0.0,Saw You In A Dream - The Japanese House
+OpenAI_zero_shot,Joy,0.0,Saw You In A Dream - The Japanese House
+BERT,Trust,0.31,Saw You In A Dream - The Japanese House
+NB,Trust,0.3,Saw You In A Dream - The Japanese House
+OpenAI_few_shot,Trust,0.0,Saw You In A Dream - The Japanese House
+OpenAI_zero_shot,Trust,0.0,Saw You In A Dream - The Japanese House
+BERT,Fear,0.82,Saw You In A Dream - The Japanese House
+NB,Fear,0.0,Saw You In A Dream - The Japanese House
+OpenAI_few_shot,Fear,0.0,Saw You In A Dream - The Japanese House
+OpenAI_zero_shot,Fear,0.0,Saw You In A Dream - The Japanese House
+BERT,Surprise,0.81,Saw You In A Dream - The Japanese House
+NB,Surprise,0.0,Saw You In A Dream - The Japanese House
+OpenAI_few_shot,Surprise,0.0,Saw You In A Dream - The Japanese House
+OpenAI_zero_shot,Surprise,0.0,Saw You In A Dream - The Japanese House
+BERT,Sadness,0.83,Saw You In A Dream - The Japanese House
+NB,Sadness,0.0,Saw You In A Dream - The Japanese House
+OpenAI_few_shot,Sadness,1.0,Saw You In A Dream - The Japanese House
+OpenAI_zero_shot,Sadness,1.0,Saw You In A Dream - The Japanese House
+BERT,Disgust,0.24,Saw You In A Dream - The Japanese House
+NB,Disgust,0.0,Saw You In A Dream - The Japanese House
+OpenAI_few_shot,Disgust,0.0,Saw You In A Dream - The Japanese House
+OpenAI_zero_shot,Disgust,0.0,Saw You In A Dream - The Japanese House
+BERT,Anger,0.25,Saw You In A Dream - The Japanese House
+NB,Anger,0.0,Saw You In A Dream - The Japanese House
+OpenAI_few_shot,Anger,0.0,Saw You In A Dream - The Japanese House
+OpenAI_zero_shot,Anger,0.0,Saw You In A Dream - The Japanese House
+BERT,Anticipation,0.37,Saw You In A Dream - The Japanese House
+NB,Anticipation,0.0,Saw You In A Dream - The Japanese House
+OpenAI_few_shot,Anticipation,1.0,Saw You In A Dream - The Japanese House
+OpenAI_zero_shot,Anticipation,1.0,Saw You In A Dream - The Japanese House
+BERT,Joy,0.41,Disco Yes - Tom Misch
+NB,Joy,0.0,Disco Yes - Tom Misch
+OpenAI_few_shot,Joy,1.0,Disco Yes - Tom Misch
+OpenAI_zero_shot,Joy,0.0,Disco Yes - Tom Misch
+BERT,Trust,0.51,Disco Yes - Tom Misch
+NB,Trust,1.0,Disco Yes - Tom Misch
+OpenAI_few_shot,Trust,1.0,Disco Yes - Tom Misch
+OpenAI_zero_shot,Trust,0.0,Disco Yes - Tom Misch
+BERT,Fear,0.62,Disco Yes - Tom Misch
+NB,Fear,0.0,Disco Yes - Tom Misch
+OpenAI_few_shot,Fear,0.0,Disco Yes - Tom Misch
+OpenAI_zero_shot,Fear,0.0,Disco Yes - Tom Misch
+BERT,Surprise,0.44,Disco Yes - Tom Misch
+NB,Surprise,0.0,Disco Yes - Tom Misch
+OpenAI_few_shot,Surprise,0.0,Disco Yes - Tom Misch
+OpenAI_zero_shot,Surprise,0.0,Disco Yes - Tom Misch
+BERT,Sadness,0.66,Disco Yes - Tom Misch
+NB,Sadness,0.0,Disco Yes - Tom Misch
+OpenAI_few_shot,Sadness,1.0,Disco Yes - Tom Misch
+OpenAI_zero_shot,Sadness,1.0,Disco Yes - Tom Misch
+BERT,Disgust,0.11,Disco Yes - Tom Misch
+NB,Disgust,0.0,Disco Yes - Tom Misch
+OpenAI_few_shot,Disgust,0.0,Disco Yes - Tom Misch
+OpenAI_zero_shot,Disgust,0.0,Disco Yes - Tom Misch
+BERT,Anger,0.12,Disco Yes - Tom Misch
+NB,Anger,0.0,Disco Yes - Tom Misch
+OpenAI_few_shot,Anger,0.0,Disco Yes - Tom Misch
+OpenAI_zero_shot,Anger,0.0,Disco Yes - Tom Misch
+BERT,Anticipation,0.52,Disco Yes - Tom Misch
+NB,Anticipation,0.02,Disco Yes - Tom Misch
+OpenAI_few_shot,Anticipation,1.0,Disco Yes - Tom Misch
+OpenAI_zero_shot,Anticipation,1.0,Disco Yes - Tom Misch
+BERT,Joy,0.39,Creep - Radiohead
+NB,Joy,0.0,Creep - Radiohead
+OpenAI_few_shot,Joy,0.0,Creep - Radiohead
+OpenAI_zero_shot,Joy,0.0,Creep - Radiohead
+BERT,Trust,0.47,Creep - Radiohead
+NB,Trust,1.0,Creep - Radiohead
+OpenAI_few_shot,Trust,0.0,Creep - Radiohead
+OpenAI_zero_shot,Trust,0.0,Creep - Radiohead
+BERT,Fear,0.5,Creep - Radiohead
+NB,Fear,0.0,Creep - Radiohead
+OpenAI_few_shot,Fear,0.0,Creep - Radiohead
+OpenAI_zero_shot,Fear,0.0,Creep - Radiohead
+BERT,Surprise,0.26,Creep - Radiohead
+NB,Surprise,0.0,Creep - Radiohead
+OpenAI_few_shot,Surprise,0.0,Creep - Radiohead
+OpenAI_zero_shot,Surprise,0.0,Creep - Radiohead
+BERT,Sadness,0.52,Creep - Radiohead
+NB,Sadness,0.0,Creep - Radiohead
+OpenAI_few_shot,Sadness,1.0,Creep - Radiohead
+OpenAI_zero_shot,Sadness,1.0,Creep - Radiohead
+BERT,Disgust,0.18,Creep - Radiohead
+NB,Disgust,0.0,Creep - Radiohead
+OpenAI_few_shot,Disgust,1.0,Creep - Radiohead
+OpenAI_zero_shot,Disgust,1.0,Creep - Radiohead
+BERT,Anger,0.09,Creep - Radiohead
+NB,Anger,0.0,Creep - Radiohead
+OpenAI_few_shot,Anger,0.0,Creep - Radiohead
+OpenAI_zero_shot,Anger,0.0,Creep - Radiohead
+BERT,Anticipation,0.43,Creep - Radiohead
+NB,Anticipation,0.0,Creep - Radiohead
+OpenAI_few_shot,Anticipation,1.0,Creep - Radiohead
+OpenAI_zero_shot,Anticipation,1.0,Creep - Radiohead
+BERT,Joy,0.51,Hideaway - Jacob Collier
+NB,Joy,0.0,Hideaway - Jacob Collier
+OpenAI_few_shot,Joy,1.0,Hideaway - Jacob Collier
+OpenAI_zero_shot,Joy,1.0,Hideaway - Jacob Collier
+BERT,Trust,0.58,Hideaway - Jacob Collier
+NB,Trust,1.0,Hideaway - Jacob Collier
+OpenAI_few_shot,Trust,1.0,Hideaway - Jacob Collier
+OpenAI_zero_shot,Trust,1.0,Hideaway - Jacob Collier
+BERT,Fear,0.4,Hideaway - Jacob Collier
+NB,Fear,0.0,Hideaway - Jacob Collier
+OpenAI_few_shot,Fear,0.0,Hideaway - Jacob Collier
+OpenAI_zero_shot,Fear,0.0,Hideaway - Jacob Collier
+BERT,Surprise,0.4,Hideaway - Jacob Collier
+NB,Surprise,0.0,Hideaway - Jacob Collier
+OpenAI_few_shot,Surprise,0.0,Hideaway - Jacob Collier
+OpenAI_zero_shot,Surprise,0.0,Hideaway - Jacob Collier
+BERT,Sadness,0.46,Hideaway - Jacob Collier
+NB,Sadness,0.0,Hideaway - Jacob Collier
+OpenAI_few_shot,Sadness,0.0,Hideaway - Jacob Collier
+OpenAI_zero_shot,Sadness,1.0,Hideaway - Jacob Collier
+BERT,Disgust,0.06,Hideaway - Jacob Collier
+NB,Disgust,0.0,Hideaway - Jacob Collier
+OpenAI_few_shot,Disgust,0.0,Hideaway - Jacob Collier
+OpenAI_zero_shot,Disgust,0.0,Hideaway - Jacob Collier
+BERT,Anger,0.06,Hideaway - Jacob Collier
+NB,Anger,0.0,Hideaway - Jacob Collier
+OpenAI_few_shot,Anger,0.0,Hideaway - Jacob Collier
+OpenAI_zero_shot,Anger,0.0,Hideaway - Jacob Collier
+BERT,Anticipation,0.67,Hideaway - Jacob Collier
+NB,Anticipation,0.0,Hideaway - Jacob Collier
+OpenAI_few_shot,Anticipation,1.0,Hideaway - Jacob Collier
+OpenAI_zero_shot,Anticipation,1.0,Hideaway - Jacob Collier

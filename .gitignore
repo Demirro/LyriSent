@@ -33,3 +33,5 @@ dist/
 
 # Local runtime outputs
 # comparison_results/
+
+.claude/

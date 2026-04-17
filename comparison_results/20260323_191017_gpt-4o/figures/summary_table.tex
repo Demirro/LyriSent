@@ -1,0 +1,15 @@
+\begin{table}
+\caption{Overall Performance Comparison of Methods}
+\label{tab:method_comparison}
+\begin{tabular}{lllr}
+\toprule
+ & Accuracy (Mean ± Std) & F1-Score (Weighted) & N Emotions \\
+display_name &  &  &  \\
+\midrule
+NaiveBayes & 0.623 ± 0.131 & 0.560 & 6 \\
+BERT & 0.657 ± 0.158 & 0.608 & 6 \\
+OpenAI (gpt-4o, zero_shot) & 0.750 ± 0.053 & 0.713 & 6 \\
+OpenAI (gpt-4o, few_shot) & 0.740 ± 0.069 & 0.703 & 6 \\
+\bottomrule
+\end{tabular}
+\end{table}

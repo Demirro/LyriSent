@@ -1,0 +1,5 @@
+display_name,Accuracy (Mean ± Std),F1-Score (Weighted),N Emotions
+NaiveBayes,0.623 ± 0.131,0.560,6
+BERT,0.657 ± 0.158,0.608,6
+"OpenAI (gpt-5.4, zero_shot)",0.753 ± 0.030,0.734,6
+"OpenAI (gpt-5.4, few_shot)",0.770 ± 0.043,0.752,6

@@ -1,0 +1,39 @@
+{
+  "run_tag": "20260323_191017_gpt-4o",
+  "random_state": 42,
+  "openai_model": "gpt-4o",
+  "openai_prompting_modes": [
+    "zero_shot",
+    "few_shot"
+  ],
+  "openai_usage_by_mode": {
+    "zero_shot": {
+      "structured_output_requested": true,
+      "structured_output_supported": true,
+      "json_success_count": 100,
+      "parse_fail_count": 0,
+      "avg_attempts": 1.0,
+      "prompt_tokens": 60314,
+      "completion_tokens": 4200,
+      "total_tokens": 64514,
+      "estimated_cost_usd": 0.0
+    },
+    "few_shot": {
+      "structured_output_requested": true,
+      "structured_output_supported": true,
+      "json_success_count": 100,
+      "parse_fail_count": 0,
+      "avg_attempts": 1.0,
+      "prompt_tokens": 80714,
+      "completion_tokens": 4200,
+      "total_tokens": 84914,
+      "estimated_cost_usd": 0.0
+    }
+  },
+  "use_cleaned_lyrics_for_all_methods": true,
+  "threshold_tuning_enabled": true,
+  "threshold_tune_fraction": 0.5,
+  "tuning_rows": 50,
+  "evaluation_rows": 50,
+  "wall_clock_total_sec": 256.4213969707489
+}

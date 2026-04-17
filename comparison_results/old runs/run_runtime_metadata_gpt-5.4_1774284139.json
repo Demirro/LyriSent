@@ -1,0 +1,16 @@
+{
+  "run_tag": "gpt-5.4_1774284139",
+  "random_state": 42,
+  "openai_model": "gpt-5.4",
+  "openai_structured_output_requested": true,
+  "openai_structured_output_supported": true,
+  "openai_json_success_count": 100,
+  "openai_parse_fail_count": 0,
+  "openai_avg_attempts": 1.0,
+  "use_cleaned_lyrics_for_all_methods": true,
+  "threshold_tuning_enabled": true,
+  "threshold_tune_fraction": 0.5,
+  "tuning_rows": 50,
+  "evaluation_rows": 50,
+  "wall_clock_total_sec": 156.56198525428772
+}

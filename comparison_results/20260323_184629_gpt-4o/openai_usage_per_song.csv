@@ -1,0 +1,201 @@
+method,method_variant,song_name,elapsed_sec,model,prompting_mode,prompt_tokens,completion_tokens,total_tokens,estimated_cost_usd,response_format,attempts,structured_output_requested,structured_output_supported
+OpenAI,OpenAI_zero_shot,Bad Romance,1.8580600999994203,gpt-4o,zero_shot,1017,42,1059,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Bad Romance,1.1757757000159472,gpt-4o,few_shot,1221,42,1263,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Beautiful Monster,1.0841283000190742,gpt-4o,zero_shot,718,42,760,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Beautiful Monster,1.271345500019379,gpt-4o,few_shot,922,42,964,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Black Magic Woman,0.9905922999605536,gpt-4o,zero_shot,456,42,498,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Black Magic Woman,1.3488073000335135,gpt-4o,few_shot,660,42,702,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,By Your Side,1.436340799962636,gpt-4o,zero_shot,546,42,588,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,By Your Side,1.2606319000478834,gpt-4o,few_shot,750,42,792,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,California Girls,1.1201872999663465,gpt-4o,zero_shot,810,42,852,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,California Girls,1.600257000012789,gpt-4o,few_shot,1014,42,1056,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,I'm Calling You,1.0811501999851316,gpt-4o,zero_shot,503,42,545,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,I'm Calling You,1.1011367000173777,gpt-4o,few_shot,707,42,749,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Can't Get Enough Of You Baby,1.2122214999981225,gpt-4o,zero_shot,577,42,619,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Can't Get Enough Of You Baby,0.9809312999714166,gpt-4o,few_shot,781,42,823,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Careless Whisper,0.9740998999914154,gpt-4o,zero_shot,635,42,677,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Careless Whisper,1.8358080999460071,gpt-4o,few_shot,839,42,881,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Come As You Are,1.2938419000129215,gpt-4o,zero_shot,472,42,514,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Come As You Are,1.5839679000200704,gpt-4o,few_shot,676,42,718,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Comfortably Numb,0.993622400041204,gpt-4o,zero_shot,585,42,627,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Comfortably Numb,1.1581223000539467,gpt-4o,few_shot,789,42,831,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Dancing Queen,1.226210799999535,gpt-4o,zero_shot,556,42,598,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Dancing Queen,0.9920677000191063,gpt-4o,few_shot,760,42,802,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Don't Cry For Me Argentina,1.1946315999957733,gpt-4o,zero_shot,584,42,626,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Don't Cry For Me Argentina,0.9798630999866873,gpt-4o,few_shot,788,42,830,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Do You Remember Rock n Roll Radio,1.0662544000078924,gpt-4o,zero_shot,519,42,561,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Do You Remember Rock n Roll Radio,1.1507496999693103,gpt-4o,few_shot,723,42,765,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Eleanor Rigby,1.0019112000009045,gpt-4o,zero_shot,547,42,589,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Eleanor Rigby,1.1951744999969378,gpt-4o,few_shot,751,42,793,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Englishman in New York,1.0267961000208743,gpt-4o,zero_shot,717,42,759,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Englishman in New York,0.9341256999759935,gpt-4o,few_shot,921,42,963,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Every Breath You Take,1.1293605000246316,gpt-4o,zero_shot,669,42,711,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Every Breath You Take,1.246544099994935,gpt-4o,few_shot,873,42,915,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Fight For This Love,1.5817898999666795,gpt-4o,zero_shot,766,42,808,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Fight For This Love,2.0116392000345513,gpt-4o,few_shot,970,42,1012,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Fly Me To The Moon,1.0554981000022963,gpt-4o,zero_shot,441,42,483,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Fly Me To The Moon,1.4764412000076845,gpt-4o,few_shot,645,42,687,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Fragile,0.8871748999808915,gpt-4o,zero_shot,477,42,519,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Fragile,0.8781971000134945,gpt-4o,few_shot,681,42,723,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Happy Xmas (War Is Over),0.868815999943763,gpt-4o,zero_shot,629,42,671,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Happy Xmas (War Is Over),0.8811069999937899,gpt-4o,few_shot,833,42,875,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Heart of Gold,0.9682764000026509,gpt-4o,zero_shot,474,42,516,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Heart of Gold,3.307343000022229,gpt-4o,few_shot,678,42,720,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Help!,1.455217899987474,gpt-4o,zero_shot,588,42,630,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Help!,0.9863104000105523,gpt-4o,few_shot,792,42,834,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Hey Jude,0.9796805999940261,gpt-4o,zero_shot,856,42,898,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Hey Jude,1.0237303000176325,gpt-4o,few_shot,1060,42,1102,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Hey Soul Sister,1.2954637000220828,gpt-4o,zero_shot,639,42,681,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Hey Soul Sister,1.1108942000428215,gpt-4o,few_shot,843,42,885,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Highway To Hell,1.3177184000378475,gpt-4o,zero_shot,520,42,562,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Highway To Hell,1.5176883000531234,gpt-4o,few_shot,724,42,766,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Hollywood,1.7266323999501765,gpt-4o,zero_shot,741,42,783,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Hollywood,1.0271541000111029,gpt-4o,few_shot,945,42,987,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Hotel California,1.2868571999715641,gpt-4o,zero_shot,685,42,727,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Hotel California,1.1662332999985665,gpt-4o,few_shot,889,42,931,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,I Can't Stop Loving You,1.1750996999908239,gpt-4o,zero_shot,408,42,450,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,I Can't Stop Loving You,1.3649280999670736,gpt-4o,few_shot,612,42,654,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,I Don't Know How To Love Him,1.1717611000058241,gpt-4o,zero_shot,520,42,562,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,I Don't Know How To Love Him,1.0762540999567136,gpt-4o,few_shot,724,42,766,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,I Don't Want To Miss A Thing,1.1544439000426792,gpt-4o,zero_shot,718,42,760,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,I Don't Want To Miss A Thing,1.5871809999807738,gpt-4o,few_shot,922,42,964,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,If You Love Somebody Set Them Free,1.275453899987042,gpt-4o,zero_shot,741,42,783,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,If You Love Somebody Set Them Free,1.517141799966339,gpt-4o,few_shot,945,42,987,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,I Gotta Feeling,0.9577754000201821,gpt-4o,zero_shot,570,42,612,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,I Gotta Feeling,1.0785075000021607,gpt-4o,few_shot,774,42,816,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,I Have A Dream,0.9626124000060372,gpt-4o,zero_shot,532,42,574,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,I Have A Dream,1.1426129000028595,gpt-4o,few_shot,736,42,778,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,I'm On Fire,1.815857099951245,gpt-4o,zero_shot,473,42,515,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,I'm On Fire,1.450034199981019,gpt-4o,few_shot,677,42,719,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Jingle Bell Rock,1.0949278000043705,gpt-4o,zero_shot,676,42,718,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Jingle Bell Rock,1.1525440000114031,gpt-4o,few_shot,880,42,922,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Johnny B. Goode,1.3496558000333607,gpt-4o,zero_shot,589,42,631,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Johnny B. Goode,1.4699763000244275,gpt-4o,few_shot,793,42,835,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Just The Way You Are,1.3740450000041164,gpt-4o,zero_shot,629,42,671,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Just The Way You Are,1.6243582000024617,gpt-4o,few_shot,833,42,875,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Just The Way You Are,1.1269257999956608,gpt-4o,zero_shot,509,42,551,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Just The Way You Are,1.246449299971573,gpt-4o,few_shot,713,42,755,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Layla Unplugged,1.0130536999786273,gpt-4o,zero_shot,513,42,555,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Layla Unplugged,1.1322313999990001,gpt-4o,few_shot,717,42,759,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Let It Be,1.3322250000201166,gpt-4o,zero_shot,577,42,619,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Let It Be,1.2192666999762878,gpt-4o,few_shot,781,42,823,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Let It Snow,1.2086418999824673,gpt-4o,zero_shot,542,42,584,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Let It Snow,1.098250899987761,gpt-4o,few_shot,746,42,788,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Little Wing,1.0721971999737434,gpt-4o,zero_shot,406,42,448,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Little Wing,0.9146582999965176,gpt-4o,few_shot,610,42,652,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Maria Maria,1.0208943000179715,gpt-4o,zero_shot,751,42,793,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Maria Maria,1.030081600008998,gpt-4o,few_shot,955,42,997,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Meet Me Halfway,2.35682220000308,gpt-4o,zero_shot,794,42,836,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Meet Me Halfway,7.371869800030254,gpt-4o,few_shot,998,42,1040,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Memories,1.1438561999821104,gpt-4o,zero_shot,568,42,610,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Memories,1.5001399000175297,gpt-4o,few_shot,772,42,814,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Memory,1.1223558000056073,gpt-4o,zero_shot,529,42,571,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Memory,1.3091540000168607,gpt-4o,few_shot,733,42,775,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,More Than Words,1.4589369999594055,gpt-4o,zero_shot,636,42,678,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,More Than Words,1.3086088999989443,gpt-4o,few_shot,840,42,882,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Nowhere Man,1.448964400042314,gpt-4o,zero_shot,508,42,550,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Nowhere Man,1.7795176000217907,gpt-4o,few_shot,712,42,754,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Oh Happy Day,0.9860345999477431,gpt-4o,zero_shot,426,42,468,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Oh Happy Day,1.0297690000152215,gpt-4o,few_shot,630,42,672,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Only Girl,1.9937327000079677,gpt-4o,zero_shot,743,42,785,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Only Girl,1.1122987999697216,gpt-4o,few_shot,947,42,989,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Pack Up,1.0149480000254698,gpt-4o,zero_shot,666,42,708,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Pack Up,1.024084100034088,gpt-4o,few_shot,870,42,912,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Penny Lane,1.099185300001409,gpt-4o,zero_shot,576,42,618,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Penny Lane,1.3999631999759004,gpt-4o,few_shot,780,42,822,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,People,1.0587219999870285,gpt-4o,zero_shot,542,42,584,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,People,1.0513907000422478,gpt-4o,few_shot,746,42,788,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Purple Rain,1.4628802000079304,gpt-4o,zero_shot,543,42,585,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Purple Rain,1.4326806000317447,gpt-4o,few_shot,747,42,789,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Rag Doll,1.2022941999603063,gpt-4o,zero_shot,758,42,800,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Rag Doll,2.2298672999604605,gpt-4o,few_shot,962,42,1004,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Rain,1.0979850000003353,gpt-4o,zero_shot,606,42,648,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Rain,1.0382393000181764,gpt-4o,few_shot,810,42,852,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Replay,1.231780299975071,gpt-4o,zero_shot,893,42,935,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Replay,1.3840264999889769,gpt-4o,few_shot,1097,42,1139,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Roadhouse Blues,0.9833520000101998,gpt-4o,zero_shot,532,42,574,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Roadhouse Blues,1.3067085000220686,gpt-4o,few_shot,736,42,778,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Rock And Roll,1.6462355999974534,gpt-4o,zero_shot,529,42,571,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Rock And Roll,1.3418723999639042,gpt-4o,few_shot,733,42,775,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Roxanne,1.6713307000463828,gpt-4o,zero_shot,671,42,713,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Roxanne,1.3686725000152364,gpt-4o,few_shot,875,42,917,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Russians,1.374814199982211,gpt-4o,zero_shot,538,42,580,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Russians,1.4469654999556951,gpt-4o,few_shot,742,42,784,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Shame,1.014886499964632,gpt-4o,zero_shot,647,42,689,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Shame,0.988827700028196,gpt-4o,few_shot,851,42,893,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Shape Of My Heart,1.0880981999798678,gpt-4o,zero_shot,609,42,651,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Shape Of My Heart,0.9927335000247695,gpt-4o,few_shot,813,42,855,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Since I've Been Loving You,1.0054084999719635,gpt-4o,zero_shot,619,42,661,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Since I've Been Loving You,1.3508249000296928,gpt-4o,few_shot,823,42,865,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Smells Like Teen Spirit,1.2305381000041962,gpt-4o,zero_shot,595,42,637,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Smells Like Teen Spirit,1.0340085999923758,gpt-4o,few_shot,799,42,841,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Smoke On The Water,0.9891025999677368,gpt-4o,zero_shot,523,42,565,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Smoke On The Water,1.1761105000041425,gpt-4o,few_shot,727,42,769,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Smooth Operator,0.8833994999877177,gpt-4o,zero_shot,573,42,615,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Smooth Operator,1.089615800010506,gpt-4o,few_shot,777,42,819,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,S.O.S.,0.9655081999953836,gpt-4o,zero_shot,586,42,628,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,S.O.S.,1.441820700012613,gpt-4o,few_shot,790,42,832,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Stairway To Heaven,1.1822367999702692,gpt-4o,zero_shot,698,42,740,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Stairway To Heaven,1.1310232999967411,gpt-4o,few_shot,902,42,944,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Stay The Night,1.0361178999883123,gpt-4o,zero_shot,697,42,739,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Stay The Night,1.2500878000282682,gpt-4o,few_shot,901,42,943,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Stereo Love,1.176106700033415,gpt-4o,zero_shot,704,42,746,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Stereo Love,1.13053540000692,gpt-4o,few_shot,908,42,950,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Still Got The Blues,1.5571876000030898,gpt-4o,zero_shot,504,42,546,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Still Got The Blues,1.2112334999837913,gpt-4o,few_shot,708,42,750,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Strange Kind Of Woman,1.412033800035715,gpt-4o,zero_shot,560,42,602,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Strange Kind Of Woman,1.269409500004258,gpt-4o,few_shot,764,42,806,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Sweet Home Alabama,1.0693662000121549,gpt-4o,zero_shot,576,42,618,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Sweet Home Alabama,1.6873499000212178,gpt-4o,few_shot,780,42,822,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Telephone,5.415471900021657,gpt-4o,zero_shot,990,42,1032,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Telephone,1.1964767000172287,gpt-4o,few_shot,1194,42,1236,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,The Flood,0.9431713999947533,gpt-4o,zero_shot,651,42,693,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,The Flood,1.0899358000024222,gpt-4o,few_shot,855,42,897,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,The Joker,1.2247121999971569,gpt-4o,zero_shot,683,42,725,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,The Joker,1.0994288000511006,gpt-4o,few_shot,887,42,929,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,The Way We Were,1.2097290999954566,gpt-4o,zero_shot,436,42,478,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,The Way We Were,1.3680315999663435,gpt-4o,few_shot,640,42,682,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,The Winner Takes It All,0.9965804999810643,gpt-4o,zero_shot,623,42,665,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,The Winner Takes It All,1.1442865999997593,gpt-4o,few_shot,827,42,869,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Under The Bridge,1.080664099950809,gpt-4o,zero_shot,599,42,641,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Under The Bridge,1.8445587999885902,gpt-4o,few_shot,803,42,845,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Waka Waka,0.9405193999991752,gpt-4o,zero_shot,701,42,743,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Waka Waka,1.0330123999738134,gpt-4o,few_shot,905,42,947,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Well Well Well,1.1670075000147335,gpt-4o,zero_shot,576,42,618,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Well Well Well,1.6428627999848686,gpt-4o,few_shot,780,42,822,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,White Knuckle Ride,1.5976269000093453,gpt-4o,zero_shot,695,42,737,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,White Knuckle Ride,1.393398399988655,gpt-4o,few_shot,899,42,941,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Wish You Were Here,1.23290270002326,gpt-4o,zero_shot,452,42,494,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Wish You Were Here,1.0877956000040285,gpt-4o,few_shot,656,42,698,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,With A Little Help From My Friends,1.4189638000098057,gpt-4o,zero_shot,625,42,667,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,With A Little Help From My Friends,1.1674350999528542,gpt-4o,few_shot,829,42,871,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Woman In Love,1.2927096000057645,gpt-4o,zero_shot,580,42,622,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Woman In Love,1.9004328000009991,gpt-4o,few_shot,784,42,826,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Yesterday,1.204043899953831,gpt-4o,zero_shot,461,42,503,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Yesterday,1.2072522999951616,gpt-4o,few_shot,665,42,707,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,You're Not Alone,1.216679800010752,gpt-4o,zero_shot,598,42,640,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,You're Not Alone,0.9992802999913692,gpt-4o,few_shot,802,42,844,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Your Love Is King,1.048100300016813,gpt-4o,zero_shot,571,42,613,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Your Love Is King,0.9247890000115149,gpt-4o,few_shot,775,42,817,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,You Shook Me All Night Long,1.194263800047338,gpt-4o,zero_shot,588,42,630,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,You Shook Me All Night Long,1.345402400009334,gpt-4o,few_shot,792,42,834,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,A Hard Day's Night,1.080974700045772,gpt-4o,zero_shot,584,42,626,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,A Hard Day's Night,1.4270179999875836,gpt-4o,few_shot,788,42,830,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Alejandro,1.2939605999854393,gpt-4o,zero_shot,749,42,791,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Alejandro,1.2138802999979816,gpt-4o,few_shot,953,42,995,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,All The Lovers,1.01776840002276,gpt-4o,zero_shot,572,42,614,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,All The Lovers,0.993140599981416,gpt-4o,few_shot,776,42,818,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,We Have All The Time In The World,1.29787639999995,gpt-4o,zero_shot,444,42,486,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,We Have All The Time In The World,1.0738969999947585,gpt-4o,few_shot,648,42,690,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,All You Need Is Love,1.0049732999759726,gpt-4o,zero_shot,539,42,581,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,All You Need Is Love,1.0316926999948919,gpt-4o,few_shot,743,42,785,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,A Love So Beautiful,1.1294924999820068,gpt-4o,zero_shot,471,42,513,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,A Love So Beautiful,1.1964793999795802,gpt-4o,few_shot,675,42,717,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,Always On My Mind,1.11188600002788,gpt-4o,zero_shot,546,42,588,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,Always On My Mind,0.9455181999946944,gpt-4o,few_shot,750,42,792,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,And I Love Her,0.9418713999912143,gpt-4o,zero_shot,438,42,480,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,And I Love Her,0.9736111999955028,gpt-4o,few_shot,642,42,684,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,A Night Like This,0.9241417000303045,gpt-4o,zero_shot,679,42,721,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,A Night Like This,0.9162228999775834,gpt-4o,few_shot,883,42,925,0.0,json,1,True,True
+OpenAI,OpenAI_zero_shot,A Song For You,0.9548262000316754,gpt-4o,zero_shot,633,42,675,0.0,json,1,True,True
+OpenAI,OpenAI_few_shot,A Song For You,1.6970505000208504,gpt-4o,few_shot,837,42,879,0.0,json,1,True,True
