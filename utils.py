@@ -17,15 +17,15 @@ def clean_lyrics(text):
     if not text:
         return ""
 
-    # 1) Replace HTML line breaks.
+    # Replace HTML line breaks.
     text = text.replace("<br>", "\n")
 
-    # 2) Split text into lines.
+    # Split text into lines.
     lines = text.splitlines()
     processed_lines = []
     lyrics_started = False  # Tracks when likely lyric lines begin.
 
-    # 3) Remove headers and detect lyric start.
+    # Remove headers and detect lyric start.
     for line in lines:
         # Trim leading/trailing whitespace.
         stripped_line = line.strip()
@@ -36,12 +36,10 @@ def clean_lyrics(text):
 
         # Skip non-lyric lines until likely lyrics begin.
         if not lyrics_started:
-            # Skip empty lines.
             if not stripped_line:
                 continue
             # Skip common non-lyric metadata lines.
             if NON_LYRIC_START_PATTERNS.search(stripped_line):
-                 # print(f"Skipping potential non-lyric line: {stripped_line}")  # Debug output
                  continue
 
             # First valid line is treated as lyric start.
@@ -52,14 +50,14 @@ def clean_lyrics(text):
             processed_lines.append(stripped_line)
 
 
-    # 4) Join remaining lines.
+    # Join remaining lines.
     intermediate_text = "\n".join(processed_lines)
 
-    # 5) Remove punctuation and lowercase text.
+    # Remove punctuation and lowercase text.
     processed_text = re.sub(r"[^\w\s\n]", "", intermediate_text)  # Keep newlines at this step.
     processed_text = processed_text.lower()
 
-    # 6) Collapse whitespace and trim.
+    # Collapse whitespace and trim.
     processed_text = re.sub(r"\s+", " ", processed_text).strip()
 
 

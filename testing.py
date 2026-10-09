@@ -46,13 +46,6 @@ def _truth_emotions_from_df(df_truth: pd.DataFrame) -> list[str]:
 df_rada = pd.read_csv(RADA_ANNOTATION_CSV)
 df_predefined = pd.read_csv(SENTIMENT_COMPARISON_CSV)
 
-print("\nStructure of df_rada:")
-print(df_rada.info())
-print("\nFirst few rows of df_rada:")
-print(df_rada.head())
-print("\nColumns in df_rada:")
-print(df_rada.columns.tolist())
-
 # Result
 nb_results = {}
 bert_results = {}
@@ -61,15 +54,12 @@ runtime_events = []
 openai_parse_failures = []
 OPENAI_MODES = tuple(m for m in OPENAI_PROMPTING_MODES if str(m).strip()) or ("zero_shot",)
 
-# Evaluation labels from truth columns
 eval_emotions = _truth_emotions_from_df(df_rada)
 if not eval_emotions:
     raise ValueError(
         "No emotion columns found in truth dataframe. "
         f"Expected something like: {EMOTION_LABELS}. Got columns: {df_rada.columns.tolist()}"
     )
-print(f"Evaluation emotions (truth-driven, ordered): {eval_emotions}")
-
 
 # Run methods on RadaNewAnnotation
 def test_methods_on_rada(df):
@@ -236,7 +226,6 @@ def test_methods_on_rada(df):
 
 
 def parse_openai_output(openai_output, song_name):
-    """Parse OpenAI output more robustly"""
     openai_predictions = {}
 
     if not openai_output:

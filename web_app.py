@@ -567,4 +567,7 @@ def serve_cross_run_file(filename):
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    host = os.getenv("LYRISENT_WEB_HOST", "127.0.0.1")
+    port = int(os.getenv("LYRISENT_WEB_PORT", "5000"))
+    debug = os.getenv("LYRISENT_WEB_DEBUG", "1").strip().lower() in {"1", "true", "yes", "on"}
+    app.run(host=host, port=port, debug=debug)
