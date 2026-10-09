@@ -5,11 +5,21 @@ import pandas as pd
 import numpy as np
 
 from config import (
-    BERT_MODEL_PATH, 
-    PRETRAINED_MODEL_NAME, 
-    EMOTION_LABELS, 
-    MAX_SEQ_LENGTH
+    BERT_MODEL_PATH,
+    PRETRAINED_MODEL_NAME,
+    EMOTION_LABELS,
+    MAX_SEQ_LENGTH,
+    BERT_HUB_REPO,
 )
+
+
+def _bert_model_source():
+    if (BERT_MODEL_PATH / 'model.safetensors').is_file() or not BERT_HUB_REPO:
+        return BERT_MODEL_PATH
+    return BERT_HUB_REPO
+
+
+BERT_MODEL_SOURCE = _bert_model_source()
 
 # Compute device (CPU or GPU)
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -24,13 +34,13 @@ try:
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(PRETRAINED_MODEL_NAME)
     # Load trained model with configured label count
-    model = AutoModelForSequenceClassification.from_pretrained(BERT_MODEL_PATH, num_labels=len(EMOTION_LABELS))
+    model = AutoModelForSequenceClassification.from_pretrained(BERT_MODEL_SOURCE, num_labels=len(EMOTION_LABELS))
     model.to(DEVICE)
     model.eval()  # Inference mode
     bert_load_success = True
-    print(f"Successfully loaded BERT model from {BERT_MODEL_PATH}")
+    print(f"Successfully loaded BERT model from {BERT_MODEL_SOURCE}")
 except OSError:
-    print(f"Warning: BERT model not found at {BERT_MODEL_PATH}. BERT predictions will not be available.")
+    print(f"Warning: BERT model not found at {BERT_MODEL_SOURCE}. BERT predictions will not be available.")
 except Exception as e:
     print(f"An error occurred while loading the BERT model: {e}")
 

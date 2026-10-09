@@ -9,7 +9,7 @@ from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request, send_from_directory, url_for
 
-from config import EMOTION_LABELS, RESULTS_DIR
+from config import EMOTION_LABELS, PUBLIC_MAX_LYRICS_CHARS, PUBLIC_MAX_SONGS, PUBLIC_MODE, RESULTS_DIR
 from unseen_runner import process_pasted_lyrics, process_songs
 
 app = Flask(__name__)
@@ -45,6 +45,10 @@ def _json_safe(obj):
     if isinstance(obj, (bytes, bytearray)):
         return obj.decode("utf-8", errors="replace")
     return str(obj)
+
+
+def _shown_path(path) -> str:
+    return "" if PUBLIC_MODE else str(path)
 
 
 def _resolve_run_dir(run_name: str) -> Path | None:
@@ -117,7 +121,7 @@ def _eval_summary_payload(run_name: str) -> dict | None:
     runtime = _read_csv_table(run_dir / "runtime_cost_summary.csv")
     return {
         "run": safe,
-        "path": str(run_dir.resolve()),
+        "path": _shown_path(run_dir.resolve()),
         "methods_comparison": methods,
         "runtime_cost": runtime,
     }
@@ -127,7 +131,7 @@ def _cross_run_payload() -> dict:
     """Read cross-run analysis artifacts from comparison_results/cross_run_analysis."""
     cross_dir = (RESULTS_DIR / "cross_run_analysis").resolve()
     if not cross_dir.is_dir():
-        return {"path": str(cross_dir), "tables": [], "images": []}
+        return {"path": _shown_path(cross_dir), "tables": [], "images": []}
 
     tables: list[dict] = []
     for p in sorted(cross_dir.glob("*.csv"), key=lambda x: x.name.lower()):
@@ -146,7 +150,7 @@ def _cross_run_payload() -> dict:
         {"name": p.name, "url": url_for("serve_cross_run_file", filename=p.name)}
         for p in sorted(cross_dir.glob("*.png"), key=lambda x: x.name.lower())
     ]
-    return {"path": str(cross_dir), "tables": tables, "images": images}
+    return {"path": _shown_path(cross_dir), "tables": tables, "images": images}
 
 
 def _list_unseen_runs() -> list[dict]:
@@ -161,7 +165,7 @@ def _list_unseen_runs() -> list[dict]:
             runs.append(
                 {
                     "name": p.name,
-                    "path": str(p.resolve()),
+                    "path": _shown_path(p.resolve()),
                     "type": "unseen",
                 }
             )
@@ -181,7 +185,7 @@ def _list_eval_runs() -> list[dict]:
             runs.append(
                 {
                     "name": p.name,
-                    "path": str(p.resolve()),
+                    "path": _shown_path(p.resolve()),
                     "type": "eval",
                     "figure_files": pngs,
                     "has_figures": bool(pngs),
@@ -222,7 +226,21 @@ def _row_to_chart_payload(row: dict) -> dict:
 def _extract_keys(data: dict) -> tuple[str | None, str | None]:
     ot = (data.get("openai_api_key") or "").strip() or None
     gt = (data.get("genius_token") or "").strip() or None
+    if PUBLIC_MODE:
+        gt = None
     return ot, gt
+
+
+def _public_request_error(lyrics: str, pairs: list, use_openai: bool, openai_key: str | None) -> str | None:
+    if not PUBLIC_MODE:
+        return None
+    if use_openai and not openai_key:
+        return "Enter your own OpenAI API key to include OpenAI."
+    if len(pairs) > PUBLIC_MAX_SONGS:
+        return f"At most {PUBLIC_MAX_SONGS} songs per request."
+    if len(lyrics) > PUBLIC_MAX_LYRICS_CHARS:
+        return f"Lyrics are limited to {PUBLIC_MAX_LYRICS_CHARS} characters."
+    return None
 
 
 @app.route("/")
@@ -232,6 +250,7 @@ def index():
         unseen_runs=_list_unseen_runs(),
         eval_runs=_list_eval_runs(),
         emotion_labels=EMOTION_LABELS,
+        public_mode=PUBLIC_MODE,
     )
 
 
@@ -256,7 +275,7 @@ def api_unseen_csv(run_name):
     body = rows[1:] if len(rows) > 1 else []
     return jsonify(
         {
-            "path": str(csv_path.resolve()),
+            "path": _shown_path(csv_path.resolve()),
             "headers": headers,
             "rows": body,
             "text": text,
@@ -272,7 +291,7 @@ def _eval_figures_json(run_name: str):
     fig_dir = run_dir / "figures"
     safe_run = Path(str(run_name)).name
     if not fig_dir.is_dir():
-        return {"run": safe_run, "path": str(run_dir.resolve()), "files": []}
+        return {"run": safe_run, "path": _shown_path(run_dir.resolve()), "files": []}
     files = []
     for f in sorted(fig_dir.glob("*.png"), key=lambda x: x.name.lower()):
         files.append(
@@ -281,7 +300,7 @@ def _eval_figures_json(run_name: str):
                 "url": url_for("serve_figure", run_name=safe_run, filename=f.name),
             }
         )
-    return {"run": safe_run, "path": str(run_dir.resolve()), "files": files}
+    return {"run": safe_run, "path": _shown_path(run_dir.resolve()), "files": files}
 
 
 # Use <run_name> (not <path:run_name>): <path> is greedy and can prevent matching the trailing /figures.
@@ -325,7 +344,7 @@ def api_eval_summary_query():
 
 @app.post("/api/open-folder")
 def api_open_folder():
-    if not _is_local_request():
+    if PUBLIC_MODE or not _is_local_request():
         return jsonify({"error": "only allowed from localhost"}), 403
     data = request.get_json(silent=True) or {}
     run_name = data.get("run_name") or data.get("path")
@@ -377,6 +396,10 @@ def api_predict():
         pairs = parse_song_lines(song_lines)
     else:
         pairs = []
+
+    public_error = _public_request_error(lyrics, pairs, use_openai, openai_key)
+    if public_error:
+        return jsonify({"error": public_error}), 400
 
     if lyrics:
         rows, _ = process_pasted_lyrics(
@@ -456,6 +479,8 @@ def api_predict():
 
 @app.post("/api/predict_save")
 def api_predict_save():
+    if PUBLIC_MODE:
+        return jsonify({"error": "Saving is disabled on the public site."}), 403
     data = request.get_json(silent=True) or {}
     use_openai = bool(data.get("use_openai", False))
     openai_key, genius_tok = _extract_keys(data)
@@ -569,5 +594,5 @@ def serve_cross_run_file(filename):
 if __name__ == "__main__":
     host = os.getenv("LYRISENT_WEB_HOST", "127.0.0.1")
     port = int(os.getenv("LYRISENT_WEB_PORT", "5000"))
-    debug = os.getenv("LYRISENT_WEB_DEBUG", "1").strip().lower() in {"1", "true", "yes", "on"}
+    debug = os.getenv("LYRISENT_WEB_DEBUG", "0").strip().lower() in {"1", "true", "yes", "on"}
     app.run(host=host, port=port, debug=debug)

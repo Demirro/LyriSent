@@ -40,6 +40,11 @@ OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 OPENAI_MODEL = 'gpt-5.4'
 OPENAI_PROMPTING_MODES = ('zero_shot', 'few_shot')
 
+PUBLIC_MODE = os.getenv('LYRISENT_PUBLIC', '0').strip().lower() in {'1', 'true', 'yes', 'on'}
+PUBLIC_MAX_SONGS = int(os.getenv('LYRISENT_PUBLIC_MAX_SONGS', '5'))
+PUBLIC_MAX_LYRICS_CHARS = int(os.getenv('LYRISENT_PUBLIC_MAX_LYRICS_CHARS', '20000'))
+BERT_HUB_REPO = os.getenv('LYRISENT_BERT_REPO', '').strip()
+
 # CSV Column Configuration
 TEXT_COLUMN = 'Lyrics'
 EMOTION_COLUMNS_SLICE = slice(4, -1)

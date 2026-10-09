@@ -9,13 +9,16 @@ from config import EMOTION_LABELS, OPENAI_MODEL
 
 load_dotenv()
 
-client = OpenAI()
+client: OpenAI | None = None
 
 
 def _openai_client(openai_api_key: str | None) -> OpenAI:
+    global client
     key = (openai_api_key or "").strip()
     if key:
         return OpenAI(api_key=key)
+    if client is None:
+        client = OpenAI()
     return client
 OPENAI_DEBUG_VERBOSE = os.getenv("OPENAI_DEBUG_VERBOSE", "0").strip().lower() in {"1", "true", "yes", "on"}
 

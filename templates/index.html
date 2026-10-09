@@ -99,18 +99,22 @@
 <body>
   <main>
     <h1>LyriSent</h1>
+    {% if public_mode %}
+    <p class="sub">Emotion tagging of song lyrics with Naive Bayes, a fine-tuned BERT model and OpenAI (Plutchik's 8 emotions).</p>
+    {% else %}
     <p class="sub">CLI: <code>python app.py</code> · Viz: <code>python visualize_results.py</code> · Keys below override <code>.env</code> for this browser session (sent only with each request).</p>
+    {% endif %}
 
     <section>
       <h2>API keys (optional)</h2>
       <p class="sub">Stored in this browser only if you check &quot;Remember&quot;. Never logged on the server.</p>
       <div class="row">
-        <div>
+        <div{% if public_mode %} hidden{% endif %}>
           <label for="genius_token">Genius API token</label>
           <input type="password" id="genius_token" autocomplete="off" placeholder="GENIUS_TOKEN" />
         </div>
         <div>
-          <label for="openai_key">OpenAI API key</label>
+          <label for="openai_key">{% if public_mode %}Your OpenAI API key (only needed for the OpenAI comparison){% else %}OpenAI API key{% endif %}</label>
           <input type="password" id="openai_key" autocomplete="off" placeholder="sk-…" />
         </div>
       </div>
@@ -142,11 +146,11 @@
       </div>
       <div class="chk">
         <input type="checkbox" id="use_openai" />
-        <label for="use_openai">Include OpenAI (costs tokens; requires key above or env)</label>
+        <label for="use_openai">{% if public_mode %}Include OpenAI (uses your own key above){% else %}Include OpenAI (costs tokens; requires key above or env){% endif %}</label>
       </div>
       <div class="btn-row">
         <button type="button" id="btn-run">Run prediction</button>
-        <button type="button" id="btn-save" class="secondary">Run &amp; save to comparison_results</button>
+        <button type="button" id="btn-save" class="secondary"{% if public_mode %} hidden{% endif %}>Run &amp; save to comparison_results</button>
       </div>
       <div id="msg"></div>
       <div id="charts" class="bars"></div>
@@ -158,10 +162,14 @@
       {% for r in eval_runs %}
       <div class="run-block" data-eval-run="{{ r.name }}">
         <h3>{{ r.name }}</h3>
+        {% if not public_mode %}
         <p class="path-line" data-folder-path="{{ r.path }}">{{ r.path }}</p>
+        {% endif %}
         <div class="btn-row">
+          {% if not public_mode %}
           <button type="button" class="ghost btn-copy-path" data-path="{{ r.path }}">Copy folder path</button>
           <button type="button" class="ghost btn-open-folder" data-run="{{ r.name }}">Open folder</button>
+          {% endif %}
           <button type="button" class="secondary btn-load-figures" data-run="{{ r.name }}">Load figures</button>
         </div>
         <div class="eval-summary-block" data-run="{{ r.name }}">
@@ -182,10 +190,14 @@
       {% for r in unseen_runs %}
       <div class="run-block">
         <h3>{{ r.name }}</h3>
+        {% if not public_mode %}
         <p class="path-line">{{ r.path }}</p>
+        {% endif %}
         <div class="btn-row">
+          {% if not public_mode %}
           <button type="button" class="ghost btn-copy-path" data-path="{{ r.path }}">Copy folder path</button>
           <button type="button" class="ghost btn-open-folder" data-run="{{ r.name }}">Open folder</button>
+          {% endif %}
           <button type="button" class="secondary csv-link" data-run="{{ r.name }}">Toggle table</button>
         </div>
       </div>
