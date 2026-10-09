@@ -31,6 +31,9 @@ build/
 dist/
 *.egg-info/
 
+# Trained model weights (too large for the Space; keep locally)
+trained_bert_model/model.safetensors
+
 # Local runtime outputs
 # comparison_results/
 
