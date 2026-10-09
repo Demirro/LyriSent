@@ -31,6 +31,13 @@ build/
 dist/
 *.egg-info/
 
+# Personal progress notes (local only)
+DEVELOPMENT_JOURNEY_CONSOLIDATED.md
+EXPERIMENT_UPDATE_LOG.md
+GPT_OUTPUT_CONSISTENCY_LIMITATION.md
+PROJECT_PRESENTATION_GUIDE.md
+STRUCTURED_OUTPUT_LIMITATION_NOTE.md
+
 # Trained model weights (too large for the Space; keep locally)
 trained_bert_model/model.safetensors
 
